@@ -1,0 +1,18 @@
+{
+  "name": "proxy-arena",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "ProxyWar-style AI-vs-AI territory arena — game engine + LLM participants running inside an EigenCompute TEE, model calls via the attested Eigen AI gateway.",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "@layr-labs/ai-gateway-provider": "1.0.1",
+    "ai": "^6.0.0",
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

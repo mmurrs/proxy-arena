@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ProxyWar Arena — verifiable AI-vs-AI territory</title>
+<style>
+  :root {
+    --bg:#0b0e14; --panel:#141924; --edge:#232b3a; --ink:#e6edf3; --dim:#8b98a9;
+    --crimson:#e5484d; --azure:#4493f8; --verdant:#3fb950; --amber:#d29922; --neutral:#39414f;
+    --accent:#7c5cff;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  header { padding:18px 22px; border-bottom:1px solid var(--edge); }
+  header h1 { margin:0; font-size:18px; letter-spacing:.2px; }
+  header .sub { color:var(--dim); font-size:13px; margin-top:3px; }
+  .badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:999px; border:1px solid var(--edge); color:var(--dim); margin-left:6px; vertical-align:middle; }
+  .badge.live { color:var(--verdant); border-color:#1f6f37; }
+  .badge.demo { color:var(--amber); border-color:#7a5b13; }
+  main { display:grid; grid-template-columns:320px 1fr 340px; gap:16px; padding:16px 22px; align-items:start; }
+  .panel { background:var(--panel); border:1px solid var(--edge); border-radius:12px; padding:16px; }
+  .panel h2 { margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.6px; color:var(--dim); }
+  textarea { width:100%; min-height:150px; resize:vertical; background:#0d1117; color:var(--ink); border:1px solid var(--edge); border-radius:8px; padding:10px; font:13px/1.5 ui-monospace,Menlo,monospace; }
+  select, button { font:14px system-ui; border-radius:8px; }
+  select { background:#0d1117; color:var(--ink); border:1px solid var(--edge); padding:8px; width:100%; margin-top:8px; }
+  button { background:var(--accent); color:#fff; border:0; padding:11px 14px; width:100%; margin-top:12px; cursor:pointer; font-weight:600; }
+  button:disabled { opacity:.5; cursor:default; }
+  .hint { color:var(--dim); font-size:12px; margin-top:8px; }
+  /* board */
+  #boardWrap { display:flex; flex-direction:column; align-items:center; }
+  #board { display:grid; gap:6px; }
+  .cell { width:74px; height:74px; border-radius:10px; background:var(--neutral); display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px solid transparent; transition:background .3s,border-color .3s; }
+  .cell .t { font-weight:700; font-size:18px; }
+  .cell .o { font-size:10px; text-transform:uppercase; letter-spacing:.5px; opacity:.85; }
+  .own-0 { background:#4a1416; } .own-1 { background:#0e2f57; } .own-2 { background:#123d1c; } .own-3 { background:#4a3908; }
+  .turnbar { margin:10px 0 4px; color:var(--dim); font-size:13px; }
+  /* nations */
+  .nation { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--edge); font-size:13px; }
+  .nation:last-child { border-bottom:0; }
+  .dot { width:10px; height:10px; border-radius:50%; flex:0 0 auto; }
+  .dot-0{background:var(--crimson)} .dot-1{background:var(--azure)} .dot-2{background:var(--verdant)} .dot-3{background:var(--amber)}
+  .nation .stats { margin-left:auto; color:var(--dim); font-variant-numeric:tabular-nums; }
+  .nation.dead { opacity:.4; text-decoration:line-through; }
+  .you { color:var(--accent); font-weight:700; }
+  #log { height:230px; overflow:auto; background:#0d1117; border:1px solid var(--edge); border-radius:8px; padding:10px; font:12px/1.5 ui-monospace,Menlo,monospace; color:#b9c4d0; }
+  #log div { padding:1px 0; }
+  #plan { font:12px/1.45 ui-monospace,Menlo,monospace; color:#b9c4d0; white-space:pre-wrap; background:#0d1117; border:1px solid var(--edge); border-radius:8px; padding:10px; min-height:40px; margin-top:8px; }
+  .result { margin-top:10px; padding:10px; border:1px solid #1f6f37; border-radius:8px; background:#0e1f14; font-size:13px; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>ProxyWar Arena <span id="modeBadge" class="badge demo">checking…</span></h1>
+  <div class="sub">Type plain-English orders for your nation. Watch AI nations expand, ally, betray, and nuke. The engine + your nation's reasoning run server-side — inside the TEE when deployed on EigenCompute, with model calls via the attested Eigen AI gateway.</div>
+</header>
+<main>
+  <section class="panel">
+    <h2>Your strategy</h2>
+    <textarea id="strategy" spellcheck="false">Expand aggressively into neutral land in the first 15 turns. Build economy once you hold 4+ tiles. Propose an alliance with the strongest neighbor early, then betray them late only if it clearly wins the game. Nuke anyone who out-troops you 2:1 on your border.</textarea>
+    <h2 style="margin-top:14px">Play as</h2>
+    <select id="nation">
+      <option value="Crimson">Crimson (NW)</option>
+      <option value="Azure">Azure (NE)</option>
+      <option value="Verdant">Verdant (SW)</option>
+      <option value="Amber">Amber (SE)</option>
+    </select>
+    <button id="start">Start match</button>
+    <div class="hint">Others follow built-in doctrines. Same seed → same match (it's deterministic, which is what makes a result verifiable).</div>
+    <div id="attest" class="hint" style="margin-top:12px"></div>
+  </section>
+
+  <section class="panel" id="boardWrap">
+    <h2 style="align-self:flex-start">Board</h2>
+    <div class="turnbar" id="turnbar">No match running.</div>
+    <div id="board"></div>
+    <div id="result"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Nations</h2>
+    <div id="nations"></div>
+    <h2 style="margin-top:16px">Your nation's current plan</h2>
+    <div id="plan">—</div>
+    <h2 style="margin-top:16px">Match log</h2>
+    <div id="log"></div>
+  </section>
+</main>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const NAMES = ["Crimson","Azure","Verdant","Amber"];
+let es = null, yourNation = "Crimson";
+
+async function checkMode() {
+  try {
+    const a = await (await fetch("/attestation")).json();
+    const b = $("#modeBadge");
+    if (a.runningInEnclave) { b.textContent = "running in TEE · attested gateway"; b.className = "badge live"; }
+    else { b.textContent = "demo mode · local doctrine"; b.className = "badge demo"; }
+    $("#attest").innerHTML = "<b>Verifiable surface:</b> " + a.determinism + " &middot; <a href='/attestation' target='_blank'>/attestation</a>";
+  } catch {}
+}
+
+function renderBoard(v) {
+  const board = $("#board");
+  board.style.gridTemplateColumns = `repeat(${v.gridW}, 74px)`;
+  board.innerHTML = "";
+  for (const t of v.territories) {
+    const c = document.createElement("div");
+    c.className = "cell" + (t.owner !== null ? " own-" + t.owner : "");
+    const owner = t.owner !== null ? v.nations[t.owner].name : "neutral";
+    c.innerHTML = `<div class="t">${t.troops}</div><div class="o">${owner.slice(0,4)}</div>`;
+    board.appendChild(c);
+  }
+  $("#turnbar").textContent = v.over
+    ? `Match over — winner: ${v.winner ?? "none"} (turn ${v.turn}/${v.maxTurns})`
+    : `Turn ${v.turn}/${v.maxTurns} — ${v.current} to move`;
+
+  const nx = $("#nations"); nx.innerHTML = "";
+  for (const n of v.nations) {
+    const row = document.createElement("div");
+    row.className = "nation" + (n.alive ? "" : " dead");
+    const you = n.name === yourNation ? " <span class='you'>(you)</span>" : "";
+    const allies = n.allies.length ? " · allied: " + n.allies.join(",") : "";
+    row.innerHTML = `<span class="dot dot-${n.id}"></span><span>${n.name}${you}</span>`
+      + `<span class="stats">${n.tiles} tiles · ${n.troops} tr · ${n.gold}g${allies}</span>`;
+    nx.appendChild(row);
+  }
+}
+
+function logLine(s) {
+  const l = $("#log");
+  const d = document.createElement("div"); d.textContent = s;
+  l.appendChild(d); l.scrollTop = l.scrollHeight;
+}
+
+$("#start").onclick = async () => {
+  if (es) { es.close(); es = null; }
+  $("#log").innerHTML = ""; $("#result").innerHTML = ""; $("#plan").textContent = "—";
+  $("#start").disabled = true; $("#start").textContent = "Match running…";
+  yourNation = $("#nation").value;
+  const body = { strategy: $("#strategy").value, nation: yourNation };
+  const r = await (await fetch("/api/match", { method:"POST", headers:{'content-type':'application/json'}, body: JSON.stringify(body) })).json();
+  es = new EventSource(`/api/match/${r.id}/stream`);
+  es.addEventListener("board", (e) => renderBoard(JSON.parse(e.data)));
+  es.addEventListener("log", (e) => logLine(JSON.parse(e.data).line));
+  es.addEventListener("plan", (e) => {
+    const p = JSON.parse(e.data);
+    $("#plan").textContent = JSON.stringify(p.plan, null, 1) + (p.degraded ? `\n(degraded: ${p.note})` : "");
+  });
+  es.addEventListener("result", (e) => {
+    const d = JSON.parse(e.data);
+    $("#result").innerHTML = `<div class="result"><b>Winner: ${d.winner ?? "none"}</b> in ${d.turns} turns, ${d.decisions} decisions.<br>`
+      + `Signable tuple: <code>seed=${d.signable.seed}, decisions=${d.signable.decisionCount}, winner=${d.signable.winner}</code><br>`
+      + `<span style="color:var(--dim)">${d.note}</span></div>`;
+  });
+  es.addEventListener("done", () => { $("#start").disabled = false; $("#start").textContent = "Start match"; es.close(); es = null; });
+};
+
+checkMode();
+</script>
+</body>
+</html>
