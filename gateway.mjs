@@ -11,6 +11,30 @@
  */
 
 const GATEWAY = process.env.EIGEN_GATEWAY_URL || "https://ai-gateway-dev.eigencloud.xyz";
+
+// JWT minting: inside the TEE the platform sets KMS_SERVER_URL + KMS_PUBLIC_KEY;
+// the SDK's AttestClient turns those into a gateway JWT (audience "llm-proxy")
+// via the enclave's attestation. KMS_AUTH_JWT, if present, overrides.
+let jwtProvider = null;
+async function getJwt() {
+  if (process.env.KMS_AUTH_JWT) return process.env.KMS_AUTH_JWT;
+  if (!process.env.KMS_SERVER_URL || !process.env.KMS_PUBLIC_KEY) return null;
+  try {
+    if (!jwtProvider) {
+      const { AttestClient, JwtProvider } = await import("@layr-labs/ecloud-sdk/attest");
+      const attestClient = new AttestClient({
+        kmsServerURL: process.env.KMS_SERVER_URL,
+        kmsPublicKey: process.env.KMS_PUBLIC_KEY,
+        audience: "llm-proxy",
+      });
+      jwtProvider = new JwtProvider(attestClient);
+    }
+    return await jwtProvider.getToken();
+  } catch (e) {
+    status.lastError = `jwt mint: ${(e?.message || e).toString().slice(0, 140)}`;
+    return null;
+  }
+}
 const MODELS = [
   process.env.ARENA_MODEL,
   "anthropic/claude-sonnet-4.6",
@@ -23,7 +47,7 @@ const MODELS = [
 let lockedModel = null;
 const status = {
   gateway: GATEWAY,
-  jwtPresent: Boolean(process.env.KMS_AUTH_JWT),
+  jwtPresent: Boolean(process.env.KMS_AUTH_JWT || (process.env.KMS_SERVER_URL && process.env.KMS_PUBLIC_KEY)),
   kmsAttestation: Boolean(process.env.KMS_SERVER_URL && process.env.KMS_PUBLIC_KEY),
   availableModels: null,   // from /v1/models, null until probed
   activeModel: null,
@@ -34,15 +58,15 @@ const status = {
 
 export function gatewayStatus() { return { ...status }; }
 
-function authHeaders() {
-  const jwt = process.env.KMS_AUTH_JWT;
+async function authHeaders() {
+  const jwt = await getJwt();
   return jwt ? { authorization: `Bearer ${jwt}` } : {};
 }
 
 /** Probe /v1/models once (refreshable) so we know what this enclave can reach. */
 export async function probeModels() {
   try {
-    const r = await fetch(`${GATEWAY}/v1/models`, { headers: authHeaders(), signal: AbortSignal.timeout(10000) });
+    const r = await fetch(`${GATEWAY}/v1/models`, { headers: await authHeaders(), signal: AbortSignal.timeout(10000) });
     if (!r.ok) {
       status.lastError = `models probe ${r.status}`;
       return null;
@@ -76,7 +100,7 @@ export async function complete(prompt, { maxTokens = 300, temperature = 0.7 } = 
     try {
       const r = await fetch(`${GATEWAY}/v1/chat/completions`, {
         method: "POST",
-        headers: { "content-type": "application/json", ...authHeaders() },
+        headers: { "content-type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({
           model,
           max_tokens: maxTokens,
