@@ -2,7 +2,7 @@ FROM node:22-bookworm-slim
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install --omit=dev
-COPY game.mjs brains.mjs server.mjs signer.mjs ./
+COPY game.mjs brains.mjs server.mjs signer.mjs gateway.mjs ./
 COPY public ./public
 # Record the built commit for the /api/verify surface. The verifiable builder
 # checks out a detached HEAD, so .git/HEAD holds the raw SHA; fall back to the
