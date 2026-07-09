@@ -1,47 +1,102 @@
 /**
  * ProxyWar Arena — server.
  *
- * Runs the whole match server-side inside the container (→ inside the TEE when
- * deployed on EigenCompute). One nation ("your" nation) follows a plain-English
- * STRATEGY you type; the model call that turns that strategy into a PLAN goes
- * through the attested Eigen AI gateway, so the reasoning happens in-enclave.
- * The other nations follow built-in doctrines. The engine is deterministic from
- * its seed, so every match is replayable and its (seed, decisions, result)
- * could be signed by the enclave.
+ * Everything that matters runs INSIDE this container, which on EigenCompute
+ * runs inside a TEE:
+ *   - the match engine (deterministic from seed + decisions)
+ *   - the LLM planner for every nation (via the Eigen AI gateway, authed by
+ *     an attestation-derived JWT the platform injects into the enclave)
+ *   - the result signer (enclave-held key; its address is publicly bound to
+ *     this app on the EigenCloud verify dashboard)
+ *
+ * /api/verify exposes all of it as checkable facts — the Verify tab renders
+ * that, and the end of each match emits an enclave-signed result tuple that
+ * anyone can validate with one ecrecover.
  */
 import express from "express";
 import { randomBytes } from "node:crypto";
+import { readFileSync } from "node:fs";
 import {
   initGame, legalActions, applyAction, endTurn, snapshotFor, boardView, NATION_NAMES,
 } from "./game.mjs";
 import { rulePlan, refreshPlan, DEFAULT_PLANS } from "./brains.mjs";
+import { gatewayStatus, probeModels } from "./gateway.mjs";
+import { signingAvailable, enclaveAddress, signResult, hashDecisions, verifySignature, canonicalize } from "./signer.mjs";
 
 const PORT = Number(process.env.APP_PORT || process.env.PORT || 3000);
 const PLAN_EVERY = Number(process.env.PLAN_EVERY || 4);
 const TURN_DELAY_MS = Number(process.env.TURN_DELAY_MS || 350);
-const HAS_GATEWAY = Boolean(process.env.KMS_SERVER_URL || process.env.EIGEN_GATEWAY_URL);
+const IN_ENCLAVE = Boolean(process.env.KMS_SERVER_URL || process.env.KMS_AUTH_JWT);
+
+const APP_ID = process.env.EIGEN_APP_ID || "0x0D39945FF6662921CA3Ff668350B2250473AA218";
+const REPO = "https://github.com/mmurrs/proxy-arena";
+const DASHBOARD = `https://verify-sepolia.eigencloud.xyz/app/${APP_ID}`;
+let BUILT_COMMIT = "unknown";
+try { BUILT_COMMIT = readFileSync("COMMIT", "utf8").trim(); } catch {}
 
 const app = express();
 app.use(express.json({ limit: "64kb" }));
 
-// health endpoint — Caddy gates public traffic on this
 app.get("/health", (_req, res) => res.status(200).json({ ok: true }));
 
-// attestation-surface: what's verifiable about this running instance
-app.get("/attestation", (_req, res) => {
+// ---- the Verify surface ------------------------------------------------------
+app.get("/api/verify", async (_req, res) => {
+  const gw = gatewayStatus();
   res.json({
-    app: "proxy-arena",
-    runningInEnclave: HAS_GATEWAY,
-    modelAccess: HAS_GATEWAY ? "attested Eigen AI gateway (in-enclave JWT via TEE attestation)" : "gateway not configured (local/dev)",
-    determinism: "engine is a pure function of (seed, decisions); replay from seed reproduces the match",
-    signable: "(seed, decision_log, final_state) — the tuple an enclave would sign; wired as a stub below",
-    note: "Demo tier: game engine + one LLM-driven nation execute server-side. Production adds enclave-signed results + sealed per-nation strategies.",
+    headline: IN_ENCLAVE
+      ? "This arena — engine, AI players, and result signing — is executing inside an EigenCompute TEE."
+      : "Local/dev mode: the same code, outside an enclave. Deploy to EigenCompute for the attested version.",
+    enclave: {
+      runningInEnclave: IN_ENCLAVE,
+      appId: APP_ID,
+      dashboard: DASHBOARD,
+      how: "EigenCompute boots this container inside a hardware TEE. The platform's verify dashboard binds the app ID to the attested image digest and the enclave-derived keys below.",
+    },
+    build: {
+      commit: BUILT_COMMIT,
+      repo: REPO,
+      commitUrl: `${REPO}/tree/${BUILT_COMMIT}`,
+      how: "Verifiable build: the platform built this image from the public repo at this commit and recorded a provenance signature. Compare the dashboard's image digest with a local rebuild of the same commit to check it.",
+    },
+    modelAccess: {
+      gateway: gw.gateway,
+      attestationJwt: gw.jwtPresent,
+      activeModel: gw.activeModel,
+      availableModels: gw.availableModels,
+      calls: gw.calls,
+      failures: gw.failures,
+      lastSuccessAt: gw.lastSuccessAt,
+      lastError: gw.lastError,
+      how: "Every nation's PLAN is written by a model reached through the Eigen AI gateway, authenticated with a JWT minted from this enclave's attestation — no API key exists in this container.",
+    },
+    resultSigning: {
+      available: signingAvailable(),
+      enclaveAddress: enclaveAddress(),
+      how: signingAvailable()
+        ? "Match results are signed with a key derived inside the enclave (path m/44'/60'/0'/0/0). That address is listed on the app's verify dashboard — if the signature recovers to it, the result came from this enclave and nowhere else."
+        : "No enclave key present (local mode) — results are unsigned here.",
+    },
+    determinism: {
+      how: "The engine is a pure function of (seed, decision log). Re-running the public engine code with the signed seed and decisions reproduces the exact final board — so a signed tuple is a checkable claim, not a trust-me claim.",
+    },
   });
 });
 
-const matches = new Map(); // id -> { game, strategy, plans, subscribers, running }
+// verify a signed result (the UI also does this client-side via ecrecover)
+app.post("/api/verify/signature", (req, res) => {
+  const { message, signature } = req.body || {};
+  if (!message || !signature) return res.status(400).json({ error: "message and signature required" });
+  res.json(verifySignature(message, signature));
+});
 
-function newMatchId() { return randomBytes(4).toString("hex"); }
+// kick a models probe on demand (also runs at boot)
+app.post("/api/verify/probe-models", async (_req, res) => res.json({ models: await probeModels() }));
+
+// legacy endpoint kept for links that point at /attestation
+app.get("/attestation", (_req, res) => res.redirect("/api/verify"));
+
+// ---- matches -----------------------------------------------------------------
+const matches = new Map();
 
 app.post("/api/match", (req, res) => {
   const strategy = String(req.body?.strategy || "").slice(0, 1200) ||
@@ -50,14 +105,13 @@ app.post("/api/match", (req, res) => {
   const seed = Number.isFinite(req.body?.seed) ? (req.body.seed >>> 0) : (randomBytes(4).readUInt32BE(0));
 
   const game = initGame(seed);
-  const id = newMatchId();
+  const id = randomBytes(4).toString("hex");
   const plans = {};
   for (const name of NATION_NAMES) plans[name] = { ...DEFAULT_PLANS[name] };
   matches.set(id, { game, strategy, yourNation, plans, subscribers: new Set(), running: false, planAge: {} });
-  res.json({ id, seed, yourNation, gatewayConfigured: HAS_GATEWAY });
+  res.json({ id, seed, yourNation, inEnclave: IN_ENCLAVE });
 });
 
-// SSE stream of the match as it plays
 app.get("/api/match/:id/stream", (req, res) => {
   const m = matches.get(req.params.id);
   if (!m) return res.status(404).end();
@@ -66,7 +120,7 @@ app.get("/api/match/:id/stream", (req, res) => {
   const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   m.subscribers.add(send);
   send("board", boardView(m.game));
-  send("meta", { strategy: m.strategy, yourNation: m.yourNation, gatewayConfigured: HAS_GATEWAY });
+  send("meta", { strategy: m.strategy, yourNation: m.yourNation, inEnclave: IN_ENCLAVE, seed: m.game.seed });
   req.on("close", () => m.subscribers.delete(send));
   if (!m.running) runMatch(m).catch((e) => console.error("match error", e));
 });
@@ -77,51 +131,74 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function runMatch(m) {
   m.running = true;
   const g = m.game;
-  broadcast(m, "log", { line: `Match seed ${g.seed} — ${m.yourNation} follows your strategy; others follow doctrine. Model access: ${HAS_GATEWAY ? "attested Eigen gateway (in-TEE)" : "local doctrine (no gateway)"}.` });
 
   while (!g.over) {
     const nationName = g.nations[g.current].name;
     const nationId = g.current;
     const snap = snapshotFor(g, nationId);
 
-    // refresh this nation's PLAN periodically. Your nation uses your strategy;
-    // others use their doctrine text as the "strategy".
     m.planAge[nationName] = (m.planAge[nationName] || 0) + 1;
     if (m.planAge[nationName] >= PLAN_EVERY || !m.plans[nationName]._seeded) {
       const strat = nationName === m.yourNation
         ? m.strategy
         : `You are ${nationName}. Doctrine: ${m.plans[nationName].reason}. Prefer ${m.plans[nationName].preferKinds.join(", ")}.`;
       const { plan, degraded, note } = await refreshPlan(strat, snap, m.plans[nationName]);
-      if (plan) { m.plans[nationName] = { ...plan, _seeded: true }; }
+      if (plan) m.plans[nationName] = { ...plan, _seeded: true };
       else m.plans[nationName]._seeded = true;
       m.planAge[nationName] = 0;
-      if (nationName === m.yourNation) {
-        broadcast(m, "plan", { nation: nationName, plan: m.plans[nationName], degraded, note });
-      }
+      broadcast(m, "plan", {
+        nation: nationName,
+        yours: nationName === m.yourNation,
+        plan: m.plans[nationName],
+        source: degraded ? "doctrine-fallback" : `llm:${m.plans[nationName].model || "?"}`,
+        degraded, note,
+      });
     }
 
     const actions = legalActions(g, nationId);
     const choice = rulePlan(m.plans[nationName], actions, snap);
     const line = applyAction(g, nationId, choice.id);
-    broadcast(m, "log", { line: `T${g.turn} ${nationName}: ${line.detail} [${m.plans[nationName].focus}]` });
+    const p = m.plans[nationName];
+    broadcast(m, "log", {
+      turn: g.turn, nation: nationName, kind: choice.kind, detail: line.detail,
+      focus: p.focus, planSource: p.model ? `llm:${p.model}` : "doctrine",
+    });
     endTurn(g);
     broadcast(m, "board", boardView(g));
     await sleep(TURN_DELAY_MS);
   }
 
   const view = boardView(g);
-  broadcast(m, "log", { line: `— Match over. Winner: ${view.winner ?? "none"} (turn ${g.turn}) —` });
-  broadcast(m, "result", {
-    seed: g.seed, winner: view.winner, turns: g.turn,
+  const tuple = {
+    app: "proxy-arena",
+    appId: APP_ID,
+    commit: BUILT_COMMIT,
+    seed: g.seed,
+    turns: g.turn,
     decisions: g.log.length,
-    signable: { seed: g.seed, decisionCount: g.log.length, winner: view.winner },
-    note: "In production the enclave signs this tuple; anyone can re-run the engine from the seed + decisions to verify.",
+    decisionsHash: hashDecisions(g.log),
+    winner: view.winner,
+    finalTiles: Object.fromEntries(view.nations.map((n) => [n.name, n.tiles])),
+  };
+  const signed = await signResult(tuple);
+  broadcast(m, "result", {
+    ...signed,
+    canonicalMessage: signed.message,
+    verify: {
+      dashboard: DASHBOARD,
+      expectAddress: enclaveAddress(),
+      how: signed.unavailable
+        ? "Unsigned (local mode)."
+        : "ecrecover(message, signature) must equal the enclave address listed on the dashboard.",
+    },
   });
   broadcast(m, "done", {});
 }
 
 app.use(express.static("public"));
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`proxy-arena listening on :${PORT} — gateway ${HAS_GATEWAY ? "configured" : "NOT configured (local doctrine mode)"}`);
+app.listen(PORT, "0.0.0.0", async () => {
+  console.log(`proxy-arena listening on :${PORT} — enclave=${IN_ENCLAVE} signer=${signingAvailable() ? enclaveAddress() : "none"}`);
+  const models = await probeModels();
+  console.log(`gateway models: ${models ? models.slice(0, 8).join(", ") : "probe failed — " + gatewayStatus().lastError}`);
 });

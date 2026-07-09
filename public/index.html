@@ -3,163 +3,1639 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ProxyWar Arena — verifiable AI-vs-AI territory</title>
+<title>ProxyWar Arena — Verifiable AI Strategy in a TEE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:#0b0e14; --panel:#141924; --edge:#232b3a; --ink:#e6edf3; --dim:#8b98a9;
-    --crimson:#e5484d; --azure:#4493f8; --verdant:#3fb950; --amber:#d29922; --neutral:#39414f;
-    --accent:#7c5cff;
+:root {
+  --bg: #0b0e14;
+  --panel: #141924;
+  --edge: #232b3a;
+  --ink: #e6edf3;
+  --dim: #8b98a9;
+  --crimson: #e5484d;
+  --azure: #4493f8;
+  --verdant: #3fb950;
+  --amber: #d29922;
+  --neutral: #39414f;
+  --accent: #7c5cff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+/* Status bar */
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 22px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--edge);
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.statusbar .label {
+  color: var(--dim);
+  margin-right: 4px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--edge);
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge.live {
+  color: var(--verdant);
+  border-color: #1f6f37;
+  background: rgba(63, 185, 80, 0.08);
+}
+
+.badge.demo {
+  color: var(--amber);
+  border-color: #7a5b13;
+  background: rgba(210, 153, 34, 0.08);
+}
+
+.badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 22px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--edge);
+}
+
+.tab {
+  padding: 12px 20px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  color: var(--dim);
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Tab content */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Main layout */
+main {
+  display: grid;
+  grid-template-columns: 320px 1fr 360px;
+  gap: 16px;
+  padding: 16px 22px;
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  main {
+    grid-template-columns: 1fr;
   }
-  * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
-  header { padding:18px 22px; border-bottom:1px solid var(--edge); }
-  header h1 { margin:0; font-size:18px; letter-spacing:.2px; }
-  header .sub { color:var(--dim); font-size:13px; margin-top:3px; }
-  .badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:999px; border:1px solid var(--edge); color:var(--dim); margin-left:6px; vertical-align:middle; }
-  .badge.live { color:var(--verdant); border-color:#1f6f37; }
-  .badge.demo { color:var(--amber); border-color:#7a5b13; }
-  main { display:grid; grid-template-columns:320px 1fr 340px; gap:16px; padding:16px 22px; align-items:start; }
-  .panel { background:var(--panel); border:1px solid var(--edge); border-radius:12px; padding:16px; }
-  .panel h2 { margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.6px; color:var(--dim); }
-  textarea { width:100%; min-height:150px; resize:vertical; background:#0d1117; color:var(--ink); border:1px solid var(--edge); border-radius:8px; padding:10px; font:13px/1.5 ui-monospace,Menlo,monospace; }
-  select, button { font:14px system-ui; border-radius:8px; }
-  select { background:#0d1117; color:var(--ink); border:1px solid var(--edge); padding:8px; width:100%; margin-top:8px; }
-  button { background:var(--accent); color:#fff; border:0; padding:11px 14px; width:100%; margin-top:12px; cursor:pointer; font-weight:600; }
-  button:disabled { opacity:.5; cursor:default; }
-  .hint { color:var(--dim); font-size:12px; margin-top:8px; }
-  /* board */
-  #boardWrap { display:flex; flex-direction:column; align-items:center; }
-  #board { display:grid; gap:6px; }
-  .cell { width:74px; height:74px; border-radius:10px; background:var(--neutral); display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px solid transparent; transition:background .3s,border-color .3s; }
-  .cell .t { font-weight:700; font-size:18px; }
-  .cell .o { font-size:10px; text-transform:uppercase; letter-spacing:.5px; opacity:.85; }
-  .own-0 { background:#4a1416; } .own-1 { background:#0e2f57; } .own-2 { background:#123d1c; } .own-3 { background:#4a3908; }
-  .turnbar { margin:10px 0 4px; color:var(--dim); font-size:13px; }
-  /* nations */
-  .nation { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--edge); font-size:13px; }
-  .nation:last-child { border-bottom:0; }
-  .dot { width:10px; height:10px; border-radius:50%; flex:0 0 auto; }
-  .dot-0{background:var(--crimson)} .dot-1{background:var(--azure)} .dot-2{background:var(--verdant)} .dot-3{background:var(--amber)}
-  .nation .stats { margin-left:auto; color:var(--dim); font-variant-numeric:tabular-nums; }
-  .nation.dead { opacity:.4; text-decoration:line-through; }
-  .you { color:var(--accent); font-weight:700; }
-  #log { height:230px; overflow:auto; background:#0d1117; border:1px solid var(--edge); border-radius:8px; padding:10px; font:12px/1.5 ui-monospace,Menlo,monospace; color:#b9c4d0; }
-  #log div { padding:1px 0; }
-  #plan { font:12px/1.45 ui-monospace,Menlo,monospace; color:#b9c4d0; white-space:pre-wrap; background:#0d1117; border:1px solid var(--edge); border-radius:8px; padding:10px; min-height:40px; margin-top:8px; }
-  .result { margin-top:10px; padding:10px; border:1px solid #1f6f37; border-radius:8px; background:#0e1f14; font-size:13px; }
-  a { color:var(--accent); }
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.panel h2 {
+  margin: 0 0 12px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--dim);
+  font-weight: 600;
+}
+
+/* Strategy panel */
+textarea {
+  width: 100%;
+  min-height: 140px;
+  resize: vertical;
+  background: #0d1117;
+  color: var(--ink);
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  padding: 12px;
+  font: 13px/1.5 ui-monospace, Menlo, Monaco, 'Courier New', monospace;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.nation-picker {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.nation-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border: 2px solid var(--edge);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: 600 13px 'Inter', system-ui;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.nation-btn .color-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+.nation-btn:hover {
+  border-color: var(--accent);
+}
+
+.nation-btn.selected {
+  border-color: var(--accent);
+  background: rgba(124, 92, 255, 0.1);
+}
+
+.start-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font: 600 14px 'Inter', system-ui;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.start-btn:hover:not(:disabled) {
+  background: #6d4cdd;
+}
+
+.start-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hint {
+  color: var(--dim);
+  font-size: 12px;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+/* Board */
+#boardWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.empty-state {
+  padding: 40px 30px;
+  text-align: center;
+  color: var(--dim);
+}
+
+.empty-state h3 {
+  margin: 0 0 16px;
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.empty-state ol {
+  text-align: left;
+  max-width: 400px;
+  margin: 16px auto;
+  line-height: 1.6;
+}
+
+.turnbar {
+  margin: 10px 0;
+  color: var(--dim);
+  font-size: 13px;
+  text-align: center;
+  min-height: 20px;
+}
+
+.turn-progress {
+  width: 100%;
+  max-width: 400px;
+  height: 6px;
+  background: var(--edge);
+  border-radius: 3px;
+  margin: 8px 0;
+  overflow: hidden;
+}
+
+.turn-progress-bar {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s;
+}
+
+#board {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.cell {
+  width: 70px;
+  height: 70px;
+  border-radius: 10px;
+  background: var(--neutral);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid transparent;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.cell.yours {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(124, 92, 255, 0.3);
+}
+
+.cell.flash {
+  animation: flash 0.5s ease-out;
+}
+
+@keyframes flash {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); filter: brightness(1.4); }
+}
+
+.cell.nuke {
+  animation: nuke 0.6s ease-out;
+}
+
+@keyframes nuke {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  25% { transform: scale(1.15); filter: brightness(2.5) saturate(0); }
+  50% { filter: brightness(0.3); }
+}
+
+.cell .troops {
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.cell .owner-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+.cell.own-0 { background: #4a1416; color: var(--crimson); }
+.cell.own-1 { background: #0e2f57; color: var(--azure); }
+.cell.own-2 { background: #123d1c; color: var(--verdant); }
+.cell.own-3 { background: #4a3908; color: var(--amber); }
+
+.legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  font-size: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+/* Nations sidebar */
+.nations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nation-card {
+  padding: 12px;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  background: #0d1117;
+  transition: all 0.2s;
+}
+
+.nation-card.dead {
+  opacity: 0.4;
+}
+
+.nation-card.yours {
+  border-color: var(--accent);
+  background: rgba(124, 92, 255, 0.05);
+}
+
+.nation-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.nation-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.nation-name {
+  font-weight: 600;
+  font-size: 14px;
+  flex-grow: 1;
+}
+
+.nation-name.dead {
+  text-decoration: line-through;
+}
+
+.nation-you {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.nation-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.nation-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.nation-stat-label {
+  color: var(--dim);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.nation-stat-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.nation-allies {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.ally-chip {
+  padding: 2px 8px;
+  background: var(--edge);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--dim);
+}
+
+/* Event feed */
+.event-feed {
+  height: 280px;
+  overflow-y: auto;
+  background: #0d1117;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.event-feed::-webkit-scrollbar {
+  width: 8px;
+}
+
+.event-feed::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.event-feed::-webkit-scrollbar-thumb {
+  background: var(--edge);
+  border-radius: 4px;
+}
+
+.event {
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-left: 3px solid var(--edge);
+  font-size: 13px;
+  line-height: 1.5;
+  transition: all 0.2s;
+}
+
+.event:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.event-icon {
+  display: inline-block;
+  width: 20px;
+  text-align: center;
+  margin-right: 6px;
+}
+
+.event-turn {
+  color: var(--dim);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  margin-right: 8px;
+}
+
+.event.expand { border-left-color: var(--verdant); }
+.event.attack { border-left-color: var(--crimson); }
+.event.alliance_request { border-left-color: var(--azure); }
+.event.betray { border-left-color: var(--amber); }
+.event.nuke { border-left-color: #ff6b9d; }
+.event.build { border-left-color: var(--dim); }
+.event.elimination {
+  border-left-color: var(--crimson);
+  background: rgba(229, 72, 77, 0.1);
+  font-weight: 600;
+  padding: 12px;
+}
+
+.event-nation-0 { color: var(--crimson); }
+.event-nation-1 { color: var(--azure); }
+.event-nation-2 { color: var(--verdant); }
+.event-nation-3 { color: var(--amber); }
+
+/* Plan cards */
+.plan-card {
+  padding: 12px;
+  background: #0d1117;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.plan-source {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--edge);
+}
+
+.plan-source.llm {
+  color: var(--verdant);
+  border-color: #1f6f37;
+  background: rgba(63, 185, 80, 0.08);
+}
+
+.plan-source.fallback {
+  color: var(--amber);
+  border-color: #7a5b13;
+  background: rgba(210, 153, 34, 0.08);
+}
+
+.plan-content {
+  color: var(--dim);
+  line-height: 1.5;
+}
+
+.plan-field {
+  margin-bottom: 6px;
+}
+
+.plan-field strong {
+  color: var(--ink);
+}
+
+/* Result card */
+.result-card {
+  margin-top: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(63, 185, 80, 0.1) 0%, rgba(124, 92, 255, 0.1) 100%);
+  border: 1px solid var(--verdant);
+  border-radius: 12px;
+}
+
+.result-winner {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.result-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.result-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.result-stat-label {
+  color: var(--dim);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.signed-result {
+  padding: 12px;
+  background: #0d1117;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.signed-result h4 {
+  margin: 0 0 10px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--dim);
+}
+
+.tuple-field {
+  font-family: ui-monospace, Menlo, Monaco, monospace;
+  font-size: 12px;
+  margin-bottom: 6px;
+  word-break: break-all;
+}
+
+.signature {
+  font-family: ui-monospace, Menlo, Monaco, monospace;
+  font-size: 11px;
+  word-break: break-all;
+  padding: 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+.verify-btn {
+  padding: 8px 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font: 600 12px 'Inter', system-ui;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.verify-result {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.verify-result.match {
+  background: rgba(63, 185, 80, 0.15);
+  border: 1px solid var(--verdant);
+  color: var(--verdant);
+}
+
+.verify-result.mismatch {
+  background: rgba(229, 72, 77, 0.15);
+  border: 1px solid var(--crimson);
+  color: var(--crimson);
+}
+
+.unsigned-note {
+  color: var(--dim);
+  font-size: 12px;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+.replay-note {
+  margin-top: 12px;
+  padding: 10px;
+  background: rgba(124, 92, 255, 0.08);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--dim);
+}
+
+/* Verify tab */
+.verify-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 22px;
+}
+
+.verify-headline {
+  font-size: 20px;
+  line-height: 1.5;
+  margin-bottom: 32px;
+  color: var(--ink);
+  text-align: center;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.verify-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.refresh-btn, .probe-btn {
+  padding: 10px 16px;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  font: 600 13px 'Inter', system-ui;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.refresh-btn:hover, .probe-btn:hover {
+  border-color: var(--accent);
+  background: rgba(124, 92, 255, 0.1);
+}
+
+.proof-cards {
+  display: grid;
+  gap: 16px;
+}
+
+.proof-card {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.proof-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.proof-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.proof-status {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.proof-status.ok {
+  background: rgba(63, 185, 80, 0.15);
+  color: var(--verdant);
+}
+
+.proof-status.degraded {
+  background: rgba(210, 153, 34, 0.15);
+  color: var(--amber);
+}
+
+.proof-status.unavailable {
+  background: rgba(139, 152, 169, 0.15);
+  color: var(--dim);
+}
+
+.proof-how {
+  color: var(--dim);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.proof-artifact {
+  padding: 12px;
+  background: #0d1117;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  font-family: ui-monospace, Menlo, Monaco, monospace;
+  font-size: 12px;
+  word-break: break-all;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.artifact-text {
+  flex-grow: 1;
+}
+
+.artifact-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.copy-btn, .link-btn {
+  padding: 6px 10px;
+  background: var(--edge);
+  border: none;
+  border-radius: 6px;
+  color: var(--ink);
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.copy-btn:hover, .link-btn:hover {
+  background: var(--accent);
+}
+
+.proof-details {
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--edge);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: var(--dim);
+}
+
+.detail-value {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.model-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.model-chip {
+  padding: 4px 10px;
+  background: var(--edge);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--ink);
+}
+
+.error-details {
+  margin-top: 12px;
+  padding: 10px;
+  background: rgba(229, 72, 77, 0.1);
+  border: 1px solid rgba(229, 72, 77, 0.3);
+  border-radius: 6px;
+  font-family: ui-monospace, Menlo, Monaco, monospace;
+  font-size: 11px;
+  color: var(--crimson);
+  cursor: pointer;
+}
+
+.error-details summary {
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
 </style>
 </head>
 <body>
-<header>
-  <h1>ProxyWar Arena <span id="modeBadge" class="badge demo">checking…</span></h1>
-  <div class="sub">Type plain-English orders for your nation. Watch AI nations expand, ally, betray, and nuke. The engine + your nation's reasoning run server-side — inside the TEE when deployed on EigenCompute, with model calls via the attested Eigen AI gateway.</div>
-</header>
-<main>
-  <section class="panel">
-    <h2>Your strategy</h2>
-    <textarea id="strategy" spellcheck="false">Expand aggressively into neutral land in the first 15 turns. Build economy once you hold 4+ tiles. Propose an alliance with the strongest neighbor early, then betray them late only if it clearly wins the game. Nuke anyone who out-troops you 2:1 on your border.</textarea>
-    <h2 style="margin-top:14px">Play as</h2>
-    <select id="nation">
-      <option value="Crimson">Crimson (NW)</option>
-      <option value="Azure">Azure (NE)</option>
-      <option value="Verdant">Verdant (SW)</option>
-      <option value="Amber">Amber (SE)</option>
-    </select>
-    <button id="start">Start match</button>
-    <div class="hint">Others follow built-in doctrines. Same seed → same match (it's deterministic, which is what makes a result verifiable).</div>
-    <div id="attest" class="hint" style="margin-top:12px"></div>
-  </section>
 
-  <section class="panel" id="boardWrap">
-    <h2 style="align-self:flex-start">Board</h2>
-    <div class="turnbar" id="turnbar">No match running.</div>
-    <div id="board"></div>
-    <div id="result"></div>
-  </section>
+<!-- Status bar -->
+<div class="statusbar">
+  <div>
+    <span class="label">Status:</span>
+    <span id="enclaveStatus" class="badge demo">
+      <span class="dot"></span>
+      <span>Checking...</span>
+    </span>
+  </div>
+  <div id="modelStatus" style="display:none;">
+    <span class="label">Model:</span>
+    <span id="activeModel"></span>
+  </div>
+  <div id="seedStatus" style="display:none;">
+    <span class="label">Seed:</span>
+    <span id="matchSeed"></span>
+  </div>
+</div>
 
-  <section class="panel">
-    <h2>Nations</h2>
-    <div id="nations"></div>
-    <h2 style="margin-top:16px">Your nation's current plan</h2>
-    <div id="plan">—</div>
-    <h2 style="margin-top:16px">Match log</h2>
-    <div id="log"></div>
-  </section>
-</main>
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" data-tab="arena">Arena</div>
+  <div class="tab" data-tab="verify">Verify</div>
+</div>
+
+<!-- Arena tab -->
+<div class="tab-content active" id="arenaTab">
+  <main>
+    <!-- Strategy panel -->
+    <section class="panel">
+      <h2>Your Strategy</h2>
+      <textarea id="strategy" spellcheck="false" placeholder="Write plain-English orders for your nation...">Expand into neutral land early, build economy once you hold a base, attack only rivals weaker than you, and honor alliances until betrayal clearly wins.</textarea>
+
+      <h2 style="margin-top: 16px;">Play As</h2>
+      <div class="nation-picker">
+        <button class="nation-btn selected" data-nation="Crimson">
+          <span class="color-swatch" style="background: var(--crimson);"></span>
+          Crimson
+        </button>
+        <button class="nation-btn" data-nation="Azure">
+          <span class="color-swatch" style="background: var(--azure);"></span>
+          Azure
+        </button>
+        <button class="nation-btn" data-nation="Verdant">
+          <span class="color-swatch" style="background: var(--verdant);"></span>
+          Verdant
+        </button>
+        <button class="nation-btn" data-nation="Amber">
+          <span class="color-swatch" style="background: var(--amber);"></span>
+          Amber
+        </button>
+      </div>
+
+      <button id="startBtn" class="start-btn">Start Match</button>
+
+      <div class="hint">
+        Your nation is steered by an LLM reading these orders. Rivals follow built-in doctrines.
+        Same seed produces the same match — determinism is what makes results verifiable.
+      </div>
+    </section>
+
+    <!-- Board panel -->
+    <section class="panel" id="boardWrap">
+      <h2 style="align-self: flex-start;">Board</h2>
+
+      <div id="emptyState" class="empty-state">
+        <h3>How This Demo Works</h3>
+        <ol>
+          <li><strong>Type orders</strong> — Write plain-English strategy for your nation</li>
+          <li><strong>AI nations fight it out</strong> — The game engine, your nation's LLM reasoning, and result signing all execute inside the TEE when deployed on EigenCompute</li>
+          <li><strong>Result comes back enclave-signed</strong> — Anyone can verify the signature matches the enclave address on the verify dashboard</li>
+        </ol>
+      </div>
+
+      <div id="boardArea" style="display:none; width:100%;">
+        <div class="turnbar" id="turnbar"></div>
+        <div class="turn-progress">
+          <div class="turn-progress-bar" id="turnProgress"></div>
+        </div>
+        <div id="board"></div>
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--crimson);"></div>
+            <span>Crimson</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--azure);"></div>
+            <span>Azure</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--verdant);"></div>
+            <span>Verdant</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--amber);"></div>
+            <span>Amber</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--neutral);"></div>
+            <span>Neutral</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="resultCard"></div>
+    </section>
+
+    <!-- Intel panel -->
+    <section class="panel">
+      <h2>Nations</h2>
+      <div id="nationsList" class="nations-list"></div>
+
+      <h2 style="margin-top: 20px;">Your AI's Thinking</h2>
+      <div id="planDisplay"></div>
+
+      <h2 style="margin-top: 20px;">Event Feed</h2>
+      <div class="event-feed" id="eventFeed"></div>
+    </section>
+  </main>
+</div>
+
+<!-- Verify tab -->
+<div class="tab-content" id="verifyTab">
+  <div class="verify-container">
+    <div class="verify-headline" id="verifyHeadline">
+      Loading verification status...
+    </div>
+
+    <div class="verify-actions">
+      <button class="refresh-btn" id="refreshVerify">↻ Refresh Status</button>
+      <button class="probe-btn" id="probeModels">🔍 Probe Models</button>
+    </div>
+
+    <div class="proof-cards" id="proofCards"></div>
+  </div>
+</div>
 
 <script>
-const $ = (s) => document.querySelector(s);
-const NAMES = ["Crimson","Azure","Verdant","Amber"];
-let es = null, yourNation = "Crimson";
-
-async function checkMode() {
-  try {
-    const a = await (await fetch("/attestation")).json();
-    const b = $("#modeBadge");
-    if (a.runningInEnclave) { b.textContent = "running in TEE · attested gateway"; b.className = "badge live"; }
-    else { b.textContent = "demo mode · local doctrine"; b.className = "badge demo"; }
-    $("#attest").innerHTML = "<b>Verifiable surface:</b> " + a.determinism + " &middot; <a href='/attestation' target='_blank'>/attestation</a>";
-  } catch {}
-}
-
-function renderBoard(v) {
-  const board = $("#board");
-  board.style.gridTemplateColumns = `repeat(${v.gridW}, 74px)`;
-  board.innerHTML = "";
-  for (const t of v.territories) {
-    const c = document.createElement("div");
-    c.className = "cell" + (t.owner !== null ? " own-" + t.owner : "");
-    const owner = t.owner !== null ? v.nations[t.owner].name : "neutral";
-    c.innerHTML = `<div class="t">${t.troops}</div><div class="o">${owner.slice(0,4)}</div>`;
-    board.appendChild(c);
-  }
-  $("#turnbar").textContent = v.over
-    ? `Match over — winner: ${v.winner ?? "none"} (turn ${v.turn}/${v.maxTurns})`
-    : `Turn ${v.turn}/${v.maxTurns} — ${v.current} to move`;
-
-  const nx = $("#nations"); nx.innerHTML = "";
-  for (const n of v.nations) {
-    const row = document.createElement("div");
-    row.className = "nation" + (n.alive ? "" : " dead");
-    const you = n.name === yourNation ? " <span class='you'>(you)</span>" : "";
-    const allies = n.allies.length ? " · allied: " + n.allies.join(",") : "";
-    row.innerHTML = `<span class="dot dot-${n.id}"></span><span>${n.name}${you}</span>`
-      + `<span class="stats">${n.tiles} tiles · ${n.troops} tr · ${n.gold}g${allies}</span>`;
-    nx.appendChild(row);
-  }
-}
-
-function logLine(s) {
-  const l = $("#log");
-  const d = document.createElement("div"); d.textContent = s;
-  l.appendChild(d); l.scrollTop = l.scrollHeight;
-}
-
-$("#start").onclick = async () => {
-  if (es) { es.close(); es = null; }
-  $("#log").innerHTML = ""; $("#result").innerHTML = ""; $("#plan").textContent = "—";
-  $("#start").disabled = true; $("#start").textContent = "Match running…";
-  yourNation = $("#nation").value;
-  const body = { strategy: $("#strategy").value, nation: yourNation };
-  const r = await (await fetch("/api/match", { method:"POST", headers:{'content-type':'application/json'}, body: JSON.stringify(body) })).json();
-  es = new EventSource(`/api/match/${r.id}/stream`);
-  es.addEventListener("board", (e) => renderBoard(JSON.parse(e.data)));
-  es.addEventListener("log", (e) => logLine(JSON.parse(e.data).line));
-  es.addEventListener("plan", (e) => {
-    const p = JSON.parse(e.data);
-    $("#plan").textContent = JSON.stringify(p.plan, null, 1) + (p.degraded ? `\n(degraded: ${p.note})` : "");
-  });
-  es.addEventListener("result", (e) => {
-    const d = JSON.parse(e.data);
-    $("#result").innerHTML = `<div class="result"><b>Winner: ${d.winner ?? "none"}</b> in ${d.turns} turns, ${d.decisions} decisions.<br>`
-      + `Signable tuple: <code>seed=${d.signable.seed}, decisions=${d.signable.decisionCount}, winner=${d.signable.winner}</code><br>`
-      + `<span style="color:var(--dim)">${d.note}</span></div>`;
-  });
-  es.addEventListener("done", () => { $("#start").disabled = false; $("#start").textContent = "Start match"; es.close(); es = null; });
+// --- Copy object for easy editing ---
+const COPY = {
+  NATION_NAMES: ["Crimson", "Azure", "Verdant", "Amber"],
+  NATION_COLORS: ["#e5484d", "#4493f8", "#3fb950", "#d29922"],
+  EVENT_ICONS: {
+    expand: "📈",
+    attack: "⚔️",
+    build: "🏗️",
+    alliance_request: "🤝",
+    betray: "🗡️",
+    nuke: "☢️",
+    hold: "🛡️",
+    elimination: "🏳️"
+  },
+  EMPTY_PLAN: "Waiting for first plan..."
 };
 
-checkMode();
+// --- State ---
+let state = {
+  currentTab: "arena",
+  es: null,
+  yourNation: "Crimson",
+  matchRunning: false,
+  currentMatchSeed: null,
+  lastSignedResult: null,
+  nationTileCount: {},
+  verifyData: null
+};
+
+// --- Utility functions ---
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+function nationColorVar(nationId) {
+  return `var(--${COPY.NATION_NAMES[nationId].toLowerCase()})`;
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    // Could show a toast here
+  });
+}
+
+// --- Tab switching ---
+$$('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const targetTab = tab.dataset.tab;
+    $$('.tab').forEach(t => t.classList.remove('active'));
+    $$('.tab-content').forEach(tc => tc.classList.remove('active'));
+    tab.classList.add('active');
+    $(`#${targetTab}Tab`).classList.add('active');
+    state.currentTab = targetTab;
+
+    if (targetTab === 'verify') {
+      loadVerifyData();
+    }
+  });
+});
+
+// --- Nation picker ---
+$$('.nation-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('.nation-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.yourNation = btn.dataset.nation;
+  });
+});
+
+// --- Start match ---
+$('#startBtn').addEventListener('click', startMatch);
+
+async function startMatch() {
+  if (state.es) {
+    state.es.close();
+    state.es = null;
+  }
+
+  // Reset UI
+  $('#eventFeed').innerHTML = '';
+  $('#planDisplay').innerHTML = `<div class="plan-card"><div class="plan-content">${COPY.EMPTY_PLAN}</div></div>`;
+  $('#resultCard').innerHTML = '';
+  $('#emptyState').style.display = 'none';
+  $('#boardArea').style.display = 'block';
+  state.nationTileCount = {};
+
+  $('#startBtn').disabled = true;
+  $('#startBtn').textContent = 'Match Running...';
+  state.matchRunning = true;
+
+  const body = {
+    strategy: $('#strategy').value.trim(),
+    nation: state.yourNation
+  };
+
+  try {
+    const res = await fetch('/api/match', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    state.currentMatchSeed = data.seed;
+    $('#seedStatus').style.display = 'block';
+    $('#matchSeed').textContent = data.seed;
+
+    state.es = new EventSource(`/api/match/${data.id}/stream`);
+
+    state.es.addEventListener('meta', (e) => {
+      const meta = JSON.parse(e.data);
+      state.yourNation = meta.yourNation;
+      if (meta.inEnclave) {
+        updateEnclaveStatus(true);
+      }
+    });
+
+    state.es.addEventListener('board', (e) => {
+      const board = JSON.parse(e.data);
+      renderBoard(board);
+    });
+
+    state.es.addEventListener('plan', (e) => {
+      const planData = JSON.parse(e.data);
+      if (planData.yours) {
+        renderYourPlan(planData);
+        if (planData.plan.model) {
+          $('#modelStatus').style.display = 'block';
+          $('#activeModel').textContent = planData.plan.model;
+        }
+      }
+    });
+
+    state.es.addEventListener('log', (e) => {
+      const log = JSON.parse(e.data);
+      addEvent(log);
+    });
+
+    state.es.addEventListener('result', (e) => {
+      const result = JSON.parse(e.data);
+      state.lastSignedResult = result;
+      renderResult(result);
+    });
+
+    state.es.addEventListener('done', () => {
+      $('#startBtn').disabled = false;
+      $('#startBtn').textContent = 'Start Match';
+      state.matchRunning = false;
+      if (state.es) {
+        state.es.close();
+        state.es = null;
+      }
+    });
+
+  } catch (err) {
+    console.error('Failed to start match:', err);
+    $('#startBtn').disabled = false;
+    $('#startBtn').textContent = 'Start Match';
+    state.matchRunning = false;
+  }
+}
+
+// --- Board rendering ---
+function renderBoard(board) {
+  const boardEl = $('#board');
+  boardEl.style.gridTemplateColumns = `repeat(${board.gridW}, 70px)`;
+
+  // Check for eliminations
+  for (const nation of board.nations) {
+    const wasAlive = state.nationTileCount[nation.name] !== undefined && state.nationTileCount[nation.name] > 0;
+    const nowDead = nation.tiles === 0;
+    if (wasAlive && nowDead) {
+      addEliminationEvent(nation.name);
+    }
+    state.nationTileCount[nation.name] = nation.tiles;
+  }
+
+  // Initial render or update
+  if (boardEl.children.length === 0) {
+    for (const t of board.territories) {
+      const cell = document.createElement('div');
+      cell.dataset.tid = t.id;
+      cell.className = 'cell';
+      boardEl.appendChild(cell);
+    }
+  }
+
+  // Update cells
+  for (const t of board.territories) {
+    const cell = boardEl.querySelector(`[data-tid="${t.id}"]`);
+    if (!cell) continue;
+
+    const prevOwner = cell.dataset.owner;
+    const newOwner = t.owner !== null ? String(t.owner) : 'null';
+
+    // Ownership change
+    if (prevOwner !== undefined && prevOwner !== newOwner) {
+      cell.classList.add('flash');
+      setTimeout(() => cell.classList.remove('flash'), 500);
+    }
+
+    cell.dataset.owner = newOwner;
+    cell.className = 'cell';
+    if (t.owner !== null) {
+      cell.classList.add(`own-${t.owner}`);
+      if (board.nations[t.owner].name === state.yourNation) {
+        cell.classList.add('yours');
+      }
+    }
+
+    const ownerName = t.owner !== null ? board.nations[t.owner].name : 'neutral';
+    cell.innerHTML = `
+      <div class="troops">${t.troops}</div>
+      <div class="owner-label">${ownerName.slice(0, 4)}</div>
+    `;
+  }
+
+  // Turn bar
+  const turnPct = board.maxTurns > 0 ? (board.turn / board.maxTurns) * 100 : 0;
+  $('#turnProgress').style.width = turnPct + '%';
+
+  if (board.over) {
+    $('#turnbar').textContent = `Match Over — Winner: ${board.winner || 'none'} (Turn ${board.turn}/${board.maxTurns})`;
+  } else {
+    $('#turnbar').textContent = `Turn ${board.turn}/${board.maxTurns} — ${board.current} to move`;
+  }
+
+  // Nations list
+  renderNations(board.nations);
+}
+
+function renderNations(nations) {
+  const sorted = [...nations].sort((a, b) => b.tiles - a.tiles);
+  const html = sorted.map(n => {
+    const isYours = n.name === state.yourNation;
+    const isDead = !n.alive;
+    return `
+      <div class="nation-card ${isDead ? 'dead' : ''} ${isYours ? 'yours' : ''}">
+        <div class="nation-header">
+          <div class="nation-dot" style="background: ${COPY.NATION_COLORS[n.id]};"></div>
+          <div class="nation-name ${isDead ? 'dead' : ''}">${n.name}</div>
+          ${isYours ? '<div class="nation-you">You</div>' : ''}
+        </div>
+        <div class="nation-stats">
+          <div class="nation-stat">
+            <div class="nation-stat-label">Tiles</div>
+            <div class="nation-stat-value">${n.tiles}</div>
+          </div>
+          <div class="nation-stat">
+            <div class="nation-stat-label">Troops</div>
+            <div class="nation-stat-value">${n.troops}</div>
+          </div>
+          <div class="nation-stat">
+            <div class="nation-stat-label">Gold</div>
+            <div class="nation-stat-value">${n.gold}</div>
+          </div>
+        </div>
+        ${n.allies.length > 0 ? `
+          <div class="nation-allies">
+            ${n.allies.map(a => `<div class="ally-chip">🤝 ${a}</div>`).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+  $('#nationsList').innerHTML = html;
+}
+
+// --- Plan rendering ---
+function renderYourPlan(planData) {
+  const { plan, source, degraded } = planData;
+  const sourceClass = source.startsWith('llm:') ? 'llm' : 'fallback';
+  const sourceLabel = source.startsWith('llm:') ? `Claude via attested gateway (${plan.model || 'unknown'})` : 'Doctrine fallback (gateway unreachable)';
+
+  const html = `
+    <div class="plan-card">
+      <div class="plan-header">
+        <div style="font-weight:600;">Latest Plan</div>
+        <div class="plan-source ${sourceClass}">${sourceLabel}</div>
+      </div>
+      <div class="plan-content">
+        <div class="plan-field"><strong>Focus:</strong> ${plan.focus || '—'}</div>
+        <div class="plan-field"><strong>Target:</strong> ${plan.target || '—'}</div>
+        <div class="plan-field"><strong>Reason:</strong> ${plan.reason || '—'}</div>
+        ${plan.preferKinds && plan.preferKinds.length > 0 ? `<div class="plan-field"><strong>Prefer:</strong> ${plan.preferKinds.join(', ')}</div>` : ''}
+      </div>
+    </div>
+  `;
+  $('#planDisplay').innerHTML = html;
+}
+
+// --- Event feed ---
+function addEvent(log) {
+  const { turn, nation, kind, detail } = log;
+  const nationIdx = COPY.NATION_NAMES.indexOf(nation);
+  const icon = COPY.EVENT_ICONS[kind] || '•';
+
+  let message = detail;
+
+  // Friendlier messages
+  if (kind === 'expand') {
+    message = `${nation} expanded — ${detail}`;
+  } else if (kind === 'attack') {
+    message = `${nation} attacked — ${detail}`;
+  } else if (kind === 'build') {
+    message = `${nation} built — ${detail}`;
+  } else if (kind === 'alliance_request') {
+    message = `${nation} — ${detail}`;
+  } else if (kind === 'betray') {
+    message = `${nation} — ${detail}`;
+  } else if (kind === 'nuke') {
+    message = `${nation} — ${detail}`;
+    // Flash nuke animation on the board
+    const match = detail.match(/tile (\d+)/);
+    if (match) {
+      const tid = match[1];
+      const cell = $('#board').querySelector(`[data-tid="${tid}"]`);
+      if (cell) {
+        cell.classList.add('nuke');
+        setTimeout(() => cell.classList.remove('nuke'), 600);
+      }
+    }
+  } else if (kind === 'hold') {
+    message = `${nation} held position`;
+  }
+
+  const eventEl = document.createElement('div');
+  eventEl.className = `event ${kind} event-nation-${nationIdx}`;
+  eventEl.innerHTML = `
+    <span class="event-turn">T${turn}</span>
+    <span class="event-icon">${icon}</span>
+    <span>${message}</span>
+  `;
+
+  const feed = $('#eventFeed');
+  feed.appendChild(eventEl);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function addEliminationEvent(nationName) {
+  const eventEl = document.createElement('div');
+  eventEl.className = 'event elimination';
+  eventEl.innerHTML = `
+    <span class="event-icon">${COPY.EVENT_ICONS.elimination}</span>
+    <span><strong>${nationName} has been eliminated!</strong></span>
+  `;
+  const feed = $('#eventFeed');
+  feed.appendChild(eventEl);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+// --- Result rendering ---
+function renderResult(result) {
+  const { tuple, signature, address, unavailable, canonicalMessage, verify } = result;
+
+  let html = `
+    <div class="result-card">
+      <div class="result-winner">
+        ${tuple.winner ? `🏆 ${tuple.winner} Wins!` : 'Match Complete'}
+      </div>
+      <div class="result-stats">
+        <div>
+          <div class="result-stat-value">${tuple.turns}</div>
+          <div class="result-stat-label">Turns</div>
+        </div>
+        <div>
+          <div class="result-stat-value">${tuple.decisions}</div>
+          <div class="result-stat-label">Decisions</div>
+        </div>
+        <div>
+          <div class="result-stat-value">${tuple.seed}</div>
+          <div class="result-stat-label">Seed</div>
+        </div>
+      </div>
+  `;
+
+  if (unavailable) {
+    html += `
+      <div class="unsigned-note">
+        Unsigned — local mode. Deploy to EigenCompute for enclave-signed results.
+      </div>
+    `;
+  } else if (signature) {
+    html += `
+      <div class="signed-result">
+        <h4>Enclave-Signed Result</h4>
+        <div class="tuple-field"><strong>App:</strong> ${tuple.app}</div>
+        <div class="tuple-field"><strong>Commit:</strong> ${tuple.commit}</div>
+        <div class="tuple-field"><strong>Seed:</strong> ${tuple.seed}</div>
+        <div class="tuple-field"><strong>Winner:</strong> ${tuple.winner || 'none'}</div>
+        <div class="tuple-field"><strong>Decisions Hash:</strong> ${tuple.decisionsHash}</div>
+
+        <h4 style="margin-top:12px;">Signature</h4>
+        <div class="signature">${signature}</div>
+
+        <button class="verify-btn" onclick="verifySignature('${canonicalMessage}', '${signature}')">
+          Verify Signature
+        </button>
+
+        <div id="verifyResult"></div>
+      </div>
+    `;
+  }
+
+  html += `
+    <div class="replay-note">
+      <strong>Replay this exact match:</strong> Use seed ${tuple.seed} with the same strategy — determinism guarantees the same outcome.
+    </div>
+  </div>
+  `;
+
+  $('#resultCard').innerHTML = html;
+}
+
+async function verifySignature(message, signature) {
+  try {
+    const res = await fetch('/api/verify/signature', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, signature })
+    });
+    const data = await res.json();
+
+    const resultDiv = $('#verifyResult');
+    if (data.error) {
+      resultDiv.innerHTML = `<div class="verify-result mismatch">❌ Verification failed: ${data.error}</div>`;
+    } else if (data.recovered) {
+      const expected = state.verifyData?.resultSigning?.enclaveAddress || 'unknown';
+      const match = data.recovered.toLowerCase() === expected.toLowerCase();
+      resultDiv.innerHTML = `
+        <div class="verify-result ${match ? 'match' : 'mismatch'}">
+          ${match ? '✓' : '✗'} Recovered: <code>${data.recovered}</code><br>
+          Expected: <code>${expected}</code><br>
+          <strong>${match ? 'SIGNATURE VALID ✓' : 'MISMATCH ✗'}</strong>
+        </div>
+      `;
+    }
+  } catch (err) {
+    console.error('Verify failed:', err);
+    $('#verifyResult').innerHTML = `<div class="verify-result mismatch">❌ Network error</div>`;
+  }
+}
+
+// --- Verify tab ---
+async function loadVerifyData() {
+  try {
+    const res = await fetch('/api/verify');
+    const data = await res.json();
+    state.verifyData = data;
+    renderVerifyData(data);
+  } catch (err) {
+    console.error('Failed to load verify data:', err);
+    $('#verifyHeadline').textContent = 'Failed to load verification status';
+  }
+}
+
+function renderVerifyData(data) {
+  $('#verifyHeadline').textContent = data.headline;
+
+  const cards = [
+    {
+      title: '1. Enclave Execution',
+      status: data.enclave.runningInEnclave ? 'ok' : 'unavailable',
+      how: data.enclave.how,
+      artifact: data.enclave.appId,
+      link: data.enclave.dashboard,
+      linkText: 'View on EigenCloud Verify Dashboard'
+    },
+    {
+      title: '2. Verifiable Build',
+      status: data.build.commit !== 'unknown' ? 'ok' : 'unavailable',
+      how: data.build.how,
+      artifact: `${data.build.repo}/tree/${data.build.commit}`,
+      link: data.build.commitUrl,
+      linkText: 'View commit on GitHub'
+    },
+    {
+      title: '3. Model Access',
+      status: data.modelAccess.lastError ? 'degraded' : (data.modelAccess.activeModel ? 'ok' : 'unavailable'),
+      how: data.modelAccess.how,
+      details: [
+        { label: 'Gateway', value: data.modelAccess.gateway },
+        { label: 'Attestation JWT', value: data.modelAccess.attestationJwt ? 'Present' : 'Not available' },
+        { label: 'Active Model', value: data.modelAccess.activeModel || 'None' },
+        { label: 'Calls / Failures', value: `${data.modelAccess.calls} / ${data.modelAccess.failures}` },
+        { label: 'Last Success', value: data.modelAccess.lastSuccessAt || 'Never' }
+      ],
+      availableModels: data.modelAccess.availableModels,
+      error: data.modelAccess.lastError
+    },
+    {
+      title: '4. Result Signing',
+      status: data.resultSigning.available ? 'ok' : 'unavailable',
+      how: data.resultSigning.how,
+      artifact: data.resultSigning.enclaveAddress,
+      link: data.enclave.dashboard
+    },
+    {
+      title: '5. Determinism',
+      status: 'ok',
+      how: data.determinism.how
+    }
+  ];
+
+  const html = cards.map(card => {
+    let cardHtml = `
+      <div class="proof-card">
+        <div class="proof-header">
+          <div class="proof-title">${card.title}</div>
+          <div class="proof-status ${card.status}">${card.status}</div>
+        </div>
+        <div class="proof-how">${card.how}</div>
+    `;
+
+    if (card.artifact) {
+      cardHtml += `
+        <div class="proof-artifact">
+          <div class="artifact-text">${card.artifact}</div>
+          <div class="artifact-actions">
+            <button class="copy-btn" onclick="copyToClipboard('${card.artifact}')">Copy</button>
+            ${card.link ? `<button class="link-btn" onclick="window.open('${card.link}', '_blank')">Open</button>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    if (card.details) {
+      cardHtml += '<div class="proof-details">';
+      for (const d of card.details) {
+        cardHtml += `
+          <div class="detail-row">
+            <div class="detail-label">${d.label}</div>
+            <div class="detail-value">${d.value}</div>
+          </div>
+        `;
+      }
+      cardHtml += '</div>';
+    }
+
+    if (card.availableModels && card.availableModels.length > 0) {
+      cardHtml += '<div class="model-chips">';
+      for (const m of card.availableModels) {
+        cardHtml += `<div class="model-chip">${m}</div>`;
+      }
+      cardHtml += '</div>';
+    }
+
+    if (card.error) {
+      cardHtml += `
+        <details class="error-details">
+          <summary>Last Error</summary>
+          <div style="margin-top:8px;">${card.error}</div>
+        </details>
+      `;
+    }
+
+    cardHtml += '</div>';
+    return cardHtml;
+  }).join('');
+
+  $('#proofCards').innerHTML = html;
+}
+
+$('#refreshVerify').addEventListener('click', loadVerifyData);
+
+$('#probeModels').addEventListener('click', async () => {
+  $('#probeModels').disabled = true;
+  $('#probeModels').textContent = 'Probing...';
+  try {
+    await fetch('/api/verify/probe-models', { method: 'POST' });
+    await loadVerifyData();
+  } catch (err) {
+    console.error('Probe failed:', err);
+  }
+  $('#probeModels').disabled = false;
+  $('#probeModels').textContent = '🔍 Probe Models';
+});
+
+// --- Initial load ---
+async function updateEnclaveStatus(inEnclave) {
+  const badge = $('#enclaveStatus');
+  if (inEnclave) {
+    badge.className = 'badge live';
+    badge.innerHTML = '<span class="dot"></span><span>Executing in EigenCompute TEE</span>';
+  } else {
+    badge.className = 'badge demo';
+    badge.innerHTML = '<span class="dot"></span><span>Local Demo Mode</span>';
+  }
+}
+
+async function init() {
+  try {
+    const res = await fetch('/api/verify');
+    const data = await res.json();
+    state.verifyData = data;
+    updateEnclaveStatus(data.enclave.runningInEnclave);
+  } catch (err) {
+    console.error('Failed to load initial status:', err);
+  }
+}
+
+init();
 </script>
+
 </body>
 </html>
