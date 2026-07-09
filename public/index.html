@@ -20,6 +20,11 @@
   --amber: #d29922;
   --neutral: #39414f;
   --accent: #7c5cff;
+
+  /* Semantic status colors (separate from nation identity) */
+  --success: #3fb950;
+  --warning: #d29922;
+  --error: #e5484d;
 }
 
 * { box-sizing: border-box; }
@@ -30,6 +35,9 @@ body {
   color: var(--ink);
   font: 15px/1.5 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
+
+/* Spacing scale: 4px rhythm — 4, 8, 12, 16, 20, 24, 32, 40 */
+/* Typography scale: 11px (tiny), 13px (body), 15px (default), 18px (subhead), 24px (headline) */
 
 /* Status bar */
 .statusbar {
@@ -63,13 +71,13 @@ body {
 }
 
 .badge.live {
-  color: var(--verdant);
+  color: var(--success);
   border-color: #1f6f37;
   background: rgba(63, 185, 80, 0.08);
 }
 
 .badge.demo {
-  color: var(--amber);
+  color: var(--warning);
   border-color: #7a5b13;
   background: rgba(210, 153, 34, 0.08);
 }
@@ -136,6 +144,30 @@ main {
 @media (max-width: 1200px) {
   main {
     grid-template-columns: 1fr;
+  }
+
+  /* Reorder: board first, intel second, strategy last */
+  main section:nth-child(1) { order: 3; }
+  main section:nth-child(2) { order: 1; }
+  main section:nth-child(3) { order: 2; }
+}
+
+@media (max-width: 480px) {
+  .cell {
+    width: 50px;
+    height: 50px;
+  }
+
+  .cell .troops {
+    font-size: 16px;
+  }
+
+  .cell .owner-label {
+    font-size: 8px;
+  }
+
+  #board {
+    gap: 4px;
   }
 }
 
@@ -247,15 +279,27 @@ textarea:focus {
 }
 
 .empty-state {
-  padding: 40px 30px;
+  padding: 40px 32px;
   text-align: center;
   color: var(--dim);
+}
+
+.empty-state-hero {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--accent);
+  margin: 0 0 24px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .empty-state h3 {
   margin: 0 0 16px;
   color: var(--ink);
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .empty-state ol {
@@ -276,9 +320,9 @@ textarea:focus {
 .turn-progress {
   width: 100%;
   max-width: 400px;
-  height: 6px;
+  height: 8px;
   background: var(--edge);
-  border-radius: 3px;
+  border-radius: 4px;
   margin: 8px 0;
   overflow: hidden;
 }
@@ -286,6 +330,7 @@ textarea:focus {
 .turn-progress-bar {
   height: 100%;
   background: var(--accent);
+  box-shadow: 0 0 8px rgba(124, 92, 255, 0.4);
   transition: width 0.3s;
 }
 
@@ -324,13 +369,13 @@ textarea:focus {
 }
 
 .cell.nuke {
-  animation: nuke 0.6s ease-out;
+  animation: nuke 0.8s ease-out;
 }
 
 @keyframes nuke {
   0%, 100% { transform: scale(1); filter: brightness(1); }
-  25% { transform: scale(1.15); filter: brightness(2.5) saturate(0); }
-  50% { filter: brightness(0.3); }
+  25% { transform: scale(1.2); filter: brightness(3) saturate(0); }
+  50% { filter: brightness(0.2); }
 }
 
 .cell .troops {
@@ -351,6 +396,11 @@ textarea:focus {
 .cell.own-1 { background: #0e2f57; color: var(--azure); }
 .cell.own-2 { background: #123d1c; color: var(--verdant); }
 .cell.own-3 { background: #4a3908; color: var(--amber); }
+
+/* Make neutral tiles recede visually */
+.cell:not([class*="own-"]) {
+  opacity: 0.6;
+}
 
 .legend {
   display: flex;
@@ -516,15 +566,26 @@ textarea:focus {
   margin-right: 8px;
 }
 
-.event.expand { border-left-color: var(--verdant); }
-.event.attack { border-left-color: var(--crimson); }
+.event.expand { border-left-color: var(--success); opacity: 0.7; }
+.event.attack { border-left-color: var(--error); }
 .event.alliance_request { border-left-color: var(--azure); }
-.event.betray { border-left-color: var(--amber); }
-.event.nuke { border-left-color: #ff6b9d; }
-.event.build { border-left-color: var(--dim); }
+.event.betray {
+  border-left-color: var(--warning);
+  border-left-width: 4px;
+  background: rgba(210, 153, 34, 0.08);
+}
+.event.nuke {
+  border-left-color: #ff6b9d;
+  border-left-width: 4px;
+  background: rgba(255, 107, 157, 0.1);
+  font-weight: 600;
+}
+.event.build { border-left-color: var(--dim); opacity: 0.7; }
+.event.hold { opacity: 0.6; }
 .event.elimination {
-  border-left-color: var(--crimson);
-  background: rgba(229, 72, 77, 0.1);
+  border-left-color: var(--error);
+  border-left-width: 4px;
+  background: rgba(229, 72, 77, 0.12);
   font-weight: 600;
   padding: 12px;
 }
@@ -559,15 +620,17 @@ textarea:focus {
 }
 
 .plan-source.llm {
-  color: var(--verdant);
+  color: var(--success);
   border-color: #1f6f37;
   background: rgba(63, 185, 80, 0.08);
+  font-weight: 600;
 }
 
 .plan-source.fallback {
-  color: var(--amber);
+  color: var(--warning);
   border-color: #7a5b13;
   background: rgba(210, 153, 34, 0.08);
+  font-weight: 600;
 }
 
 .plan-content {
@@ -593,10 +656,11 @@ textarea:focus {
 }
 
 .result-winner {
-  font-size: 18px;
+  font-size: 28px;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
   text-align: center;
+  letter-spacing: -0.5px;
 }
 
 .result-stats {
@@ -673,14 +737,14 @@ textarea:focus {
 
 .verify-result.match {
   background: rgba(63, 185, 80, 0.15);
-  border: 1px solid var(--verdant);
-  color: var(--verdant);
+  border: 1px solid var(--success);
+  color: var(--success);
 }
 
 .verify-result.mismatch {
   background: rgba(229, 72, 77, 0.15);
-  border: 1px solid var(--crimson);
-  color: var(--crimson);
+  border: 1px solid var(--error);
+  color: var(--error);
 }
 
 .unsigned-note {
@@ -775,12 +839,12 @@ textarea:focus {
 
 .proof-status.ok {
   background: rgba(63, 185, 80, 0.15);
-  color: var(--verdant);
+  color: var(--success);
 }
 
 .proof-status.degraded {
   background: rgba(210, 153, 34, 0.15);
-  color: var(--amber);
+  color: var(--warning);
 }
 
 .proof-status.unavailable {
@@ -834,6 +898,11 @@ textarea:focus {
   background: var(--accent);
 }
 
+.copy-btn.copied {
+  background: var(--success);
+  color: #fff;
+}
+
 .proof-details {
   margin-top: 12px;
   font-size: 13px;
@@ -883,7 +952,7 @@ textarea:focus {
   border-radius: 6px;
   font-family: ui-monospace, Menlo, Monaco, monospace;
   font-size: 11px;
-  color: var(--crimson);
+  color: var(--error);
   cursor: pointer;
 }
 
@@ -962,11 +1031,14 @@ textarea:focus {
       <h2 style="align-self: flex-start;">Board</h2>
 
       <div id="emptyState" class="empty-state">
-        <h3>How This Demo Works</h3>
+        <div class="empty-state-hero">
+          The match and its result provably came from the enclave — and you can check.
+        </div>
+        <h3>An AI-vs-AI strategy game you don't have to trust</h3>
         <ol>
-          <li><strong>Type orders</strong> — Write plain-English strategy for your nation</li>
-          <li><strong>AI nations fight it out</strong> — The game engine, your nation's LLM reasoning, and result signing all execute inside the TEE when deployed on EigenCompute</li>
-          <li><strong>Result comes back enclave-signed</strong> — Anyone can verify the signature matches the enclave address on the verify dashboard</li>
+          <li><strong>Write orders in plain English</strong> — your nation's standing strategy: when to expand, who to ally, when to betray, when to nuke.</li>
+          <li><strong>Four AI nations fight it out on the server</strong> — the game engine and the AI's reasoning run inside an EigenCompute TEE, not in your browser and not on a machine anyone can tamper with.</li>
+          <li><strong>The result comes back signed by the enclave</strong> — one signature check proves the outcome came from this exact code running in this exact enclave. Nobody — including the people who deployed it — could forge it. See the <em>Verify</em> tab for every claim and how to check it.</li>
         </ol>
       </div>
 
@@ -1021,7 +1093,7 @@ textarea:focus {
 <div class="tab-content" id="verifyTab">
   <div class="verify-container">
     <div class="verify-headline" id="verifyHeadline">
-      Loading verification status...
+      ProxyWar Arena runs on EigenCompute — every claim below is checkable.
     </div>
 
     <div class="verify-actions">
@@ -1035,6 +1107,11 @@ textarea:focus {
 
 <script>
 // --- Copy object for easy editing ---
+// ---------------------------------------------------------------------------
+// COPY — every user-facing string lives here. DRAFT v1 for team review.
+// Voice: state what is verifiably true, in plain words. Never claim more than
+// /api/verify reports. "TEE" on first mention, "enclave" after.
+// ---------------------------------------------------------------------------
 const COPY = {
   NATION_NAMES: ["Crimson", "Azure", "Verdant", "Amber"],
   NATION_COLORS: ["#e5484d", "#4493f8", "#3fb950", "#d29922"],
@@ -1048,7 +1125,17 @@ const COPY = {
     hold: "🛡️",
     elimination: "🏳️"
   },
-  EMPTY_PLAN: "Waiting for first plan..."
+  EMPTY_PLAN: "Waiting for first plan...",
+
+  // status strip — the page's honest heartbeat
+  STATUS_TEE: "Running on EigenCompute (TEE)",
+  STATUS_LOCAL: "Local demo — not in an enclave",
+  NOW_ENGINE_TEE: "game engine executing in the enclave",
+  NOW_ENGINE_LOCAL: "game engine running locally",
+  NOW_LLM_ON: (model) => "nations steered by " + (model || "an LLM") + " via the attested gateway",
+  NOW_LLM_FALLBACK: "nations on built-in doctrine (LLM gateway unavailable right now)",
+  NOW_SIGNED: "match results enclave-signed",
+  NOW_UNSIGNED: "match results unsigned (no enclave key here)",
 };
 
 // --- State ---
@@ -1071,9 +1158,17 @@ function nationColorVar(nationId) {
   return `var(--${COPY.NATION_NAMES[nationId].toLowerCase()})`;
 }
 
-function copyToClipboard(text) {
+function copyToClipboard(text, btnElement) {
   navigator.clipboard.writeText(text).then(() => {
-    // Could show a toast here
+    if (btnElement) {
+      const originalText = btnElement.textContent;
+      btnElement.textContent = '✓ Copied';
+      btnElement.classList.add('copied');
+      setTimeout(() => {
+        btnElement.textContent = originalText;
+        btnElement.classList.remove('copied');
+      }, 1500);
+    }
   });
 }
 
@@ -1552,7 +1647,7 @@ function renderVerifyData(data) {
         <div class="proof-artifact">
           <div class="artifact-text">${card.artifact}</div>
           <div class="artifact-actions">
-            <button class="copy-btn" onclick="copyToClipboard('${card.artifact}')">Copy</button>
+            <button class="copy-btn" onclick="copyToClipboard('${card.artifact}', this)">Copy</button>
             ${card.link ? `<button class="link-btn" onclick="window.open('${card.link}', '_blank')">Open</button>` : ''}
           </div>
         </div>
@@ -1612,15 +1707,33 @@ $('#probeModels').addEventListener('click', async () => {
 });
 
 // --- Initial load ---
-async function updateEnclaveStatus(inEnclave) {
+// Render the server's honest "right now" summary as three separate facts, so
+// the page never over-claims: engine location, who is writing plans, signing.
+async function updateEnclaveStatus(data) {
   const badge = $('#enclaveStatus');
-  if (inEnclave) {
+  const now = data.now || {};
+  if (now.engineInTee) {
     badge.className = 'badge live';
-    badge.innerHTML = '<span class="dot"></span><span>Executing in EigenCompute TEE</span>';
+    badge.innerHTML = '<span class="dot"></span><span>' + COPY.STATUS_TEE + '</span>';
   } else {
     badge.className = 'badge demo';
-    badge.innerHTML = '<span class="dot"></span><span>Local Demo Mode</span>';
+    badge.innerHTML = '<span class="dot"></span><span>' + COPY.STATUS_LOCAL + '</span>';
   }
+  let nowBar = $('#nowBar');
+  if (!nowBar) {
+    nowBar = document.createElement('div');
+    nowBar.id = 'nowBar';
+    nowBar.style.cssText = 'flex-basis:100%;font-size:12px;color:var(--dim);display:flex;gap:14px;flex-wrap:wrap;';
+    document.querySelector('.statusbar').appendChild(nowBar);
+  }
+  const chip = (ok, text) =>
+    '<span style="display:inline-flex;align-items:center;gap:5px;">' +
+    '<span style="width:7px;height:7px;border-radius:50%;background:' + (ok ? 'var(--verdant)' : 'var(--amber)') + '"></span>' +
+    text + '</span>';
+  nowBar.innerHTML =
+    chip(now.engineInTee, now.engineInTee ? COPY.NOW_ENGINE_TEE : COPY.NOW_ENGINE_LOCAL) +
+    chip(now.llmSteering, now.llmSteering ? COPY.NOW_LLM_ON(data.modelAccess && data.modelAccess.activeModel) : COPY.NOW_LLM_FALLBACK) +
+    chip(now.resultsSigned, now.resultsSigned ? COPY.NOW_SIGNED : COPY.NOW_UNSIGNED);
 }
 
 async function init() {
@@ -1628,13 +1741,15 @@ async function init() {
     const res = await fetch('/api/verify');
     const data = await res.json();
     state.verifyData = data;
-    updateEnclaveStatus(data.enclave.runningInEnclave);
+    updateEnclaveStatus(data);
   } catch (err) {
     console.error('Failed to load initial status:', err);
   }
 }
 
 init();
+// keep the "right now" strip truthful while a match runs (gateway state changes)
+setInterval(init, 30000);
 </script>
 
 </body>

@@ -28,9 +28,10 @@ const PLAN_EVERY = Number(process.env.PLAN_EVERY || 4);
 const TURN_DELAY_MS = Number(process.env.TURN_DELAY_MS || 350);
 const IN_ENCLAVE = Boolean(process.env.KMS_SERVER_URL || process.env.KMS_AUTH_JWT);
 
-const APP_ID = process.env.EIGEN_APP_ID || "0x0D39945FF6662921CA3Ff668350B2250473AA218";
+const APP_ID = process.env.EIGEN_APP_ID || "unregistered";
 const REPO = "https://github.com/mmurrs/proxy-arena";
-const DASHBOARD = `https://verify-sepolia.eigencloud.xyz/app/${APP_ID}`;
+const DASHBOARD_BASE = process.env.EIGEN_DASHBOARD_BASE || "https://verify.eigencloud.xyz";
+const DASHBOARD = `${DASHBOARD_BASE}/app/${APP_ID}`;
 let BUILT_COMMIT = "unknown";
 try { BUILT_COMMIT = readFileSync("COMMIT", "utf8").trim(); } catch {}
 
@@ -42,7 +43,20 @@ app.get("/health", (_req, res) => res.status(200).json({ ok: true }));
 // ---- the Verify surface ------------------------------------------------------
 app.get("/api/verify", async (_req, res) => {
   const gw = gatewayStatus();
+  // Honest "what is true right now" summary — the UI renders this verbatim,
+  // so the page can never claim more than the instance can prove.
+  const now = {
+    engineInTee: IN_ENCLAVE,
+    llmSteering: gw.lastSuccessAt !== null,      // a model call has actually succeeded
+    resultsSigned: signingAvailable(),
+    statusLine: [
+      IN_ENCLAVE ? "engine: in TEE" : "engine: local (no enclave)",
+      gw.lastSuccessAt ? `AI plans: ${gw.activeModel} via gateway` : "AI plans: built-in doctrine (gateway unavailable)",
+      signingAvailable() ? "results: enclave-signed" : "results: unsigned",
+    ].join(" · "),
+  };
   res.json({
+    now,
     headline: IN_ENCLAVE
       ? "This arena — engine, AI players, and result signing — is executing inside an EigenCompute TEE."
       : "Local/dev mode: the same code, outside an enclave. Deploy to EigenCompute for the attested version.",
