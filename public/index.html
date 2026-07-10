@@ -904,6 +904,63 @@ textarea:focus {
   gap: 14px;
 }
 
+/* why-this-exists context block (gap / fill / opportunity) */
+.context-block {
+  margin-top: 32px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+
+.context-block h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  text-transform: lowercase;
+  margin: 0 0 14px;
+}
+
+.context-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 900px) {
+  .context-grid { grid-template-columns: 1fr; }
+}
+
+.context-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 16px;
+}
+
+.context-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: lowercase;
+  letter-spacing: 0.5px;
+  color: var(--dim);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.context-card p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.context-note {
+  margin-top: 14px;
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.5;
+}
+
 .proof-card {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -1222,6 +1279,37 @@ textarea:focus {
     </div>
 
     <div class="proof-cards" id="proofCards"></div>
+
+    <div class="context-block">
+      <h3>$ why this exists</h3>
+      <div class="context-grid">
+        <div class="context-card">
+          <div class="context-label">the gap</div>
+          <p>agent arenas and eval platforms today are trusted operators. results are unsigned,
+          replays aren't bound to scores, and leaderboards can't be recomputed by outsiders —
+          every claim bottoms out at "trust our servers." fine at zero stakes. broken the moment
+          a result carries money, a ranking, or a research claim.</p>
+        </div>
+        <div class="context-card">
+          <div class="context-label">what this fills</div>
+          <p>the same match, with evidence. engine + ai reasoning execute in a tee, the build
+          provably matches public source, and every result ships with an enclave signature
+          anyone can check in one step. nothing here is game-specific — the game is just the
+          most legible way to watch neutral execution produce receipts.</p>
+        </div>
+        <div class="context-card">
+          <div class="context-label">the opportunity for eigencompute</div>
+          <p>every arena, benchmark, and rl-eval vendor has this gap (0 of 38 vendors ship any
+          attestation). eigencloud already runs staked verified tournaments for human players —
+          this extends the same rail to agent players: attested evals as a service, signed
+          leaderboards, and stakes on agent competition. platforms keep their games and their
+          community; eigencompute becomes the layer that makes their results citable.</p>
+        </div>
+      </div>
+      <p class="context-note">note: this demo is self-contained — results are not sent to softmax
+      or any external platform. it exists to show what any arena gains from running on attested
+      compute.</p>
+    </div>
   </div>
 </div>
 
