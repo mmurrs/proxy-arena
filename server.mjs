@@ -148,14 +148,24 @@ app.get("/attestation", (_req, res) => res.redirect("/api/verify"));
 
 // ---- matches -----------------------------------------------------------------
 const matches = new Map();
+// Last completed match's full signed receipt — the 15-second payoff for
+// viewers who won't wait for a live match. Survives until process restart.
+let lastReceipt = null;
+
+app.get("/api/receipt/last", (_req, res) => {
+  if (!lastReceipt) return res.json({ none: true, note: "No match has finished since this instance started. Press Start — a short match takes about a minute." });
+  res.json(lastReceipt);
+});
 
 app.post("/api/match", (req, res) => {
   const strategy = String(req.body?.strategy || "").slice(0, 1200) ||
     "Expand into neutral land early, build economy once you hold a base, attack only rivals weaker than you, and honor alliances until betrayal clearly wins.";
   const yourNation = NATION_NAMES.includes(req.body?.nation) ? req.body.nation : "Crimson";
   const seed = Number.isFinite(req.body?.seed) ? (req.body.seed >>> 0) : (randomBytes(4).readUInt32BE(0));
+  // Short matches by default so a first-time viewer reaches the receipt fast.
+  const turns = Number.isFinite(req.body?.turns) ? req.body.turns : 30;
 
-  const game = initGame(seed);
+  const game = initGame(seed, turns);
   const id = randomBytes(4).toString("hex");
   const plans = {};
   for (const name of NATION_NAMES) plans[name] = { ...DEFAULT_PLANS[name] };
@@ -237,7 +247,7 @@ async function runMatch(m) {
   // proves "this app's key signed it"; this proves "an attested enclave
   // instance committed to it" — hardware-rooted, no wallet tooling needed.
   const attestation = await attestPayload(signed.message);
-  broadcast(m, "result", {
+  const resultEvent = {
     ...signed,
     canonicalMessage: signed.message,
     attestation: attestation.unavailable
@@ -256,7 +266,9 @@ async function runMatch(m) {
         ? "Unsigned (local mode)."
         : "ecrecover(message, signature) must equal the enclave address listed on the dashboard.",
     },
-  });
+  };
+  lastReceipt = { ...resultEvent, finishedAt: new Date().toISOString() };
+  broadcast(m, "result", resultEvent);
   broadcast(m, "done", {});
 }
 

@@ -52,7 +52,7 @@ function buildTerritories() {
   return terr;
 }
 
-export function initGame(seed) {
+export function initGame(seed, maxTurns = 60) {
   const rng = makeRng(seed);
   const territories = buildTerritories();
 
@@ -73,7 +73,7 @@ export function initGame(seed) {
   }
 
   return {
-    seed, turn: 0, maxTurns: 60,
+    seed, turn: 0, maxTurns: Math.min(120, Math.max(20, maxTurns | 0)),
     territories, nations,
     current: 0,            // whose decision it is
     log: [],               // { turn, nation, action, detail }
