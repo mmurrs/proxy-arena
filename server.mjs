@@ -29,10 +29,11 @@ const PLAN_EVERY = Number(process.env.PLAN_EVERY || 4);
 const TURN_DELAY_MS = Number(process.env.TURN_DELAY_MS || 350);
 const IN_ENCLAVE = Boolean(process.env.KMS_SERVER_URL || process.env.KMS_AUTH_JWT);
 
-const APP_ID = process.env.EIGEN_APP_ID || "unregistered";
+const APP_ID = process.env.EIGEN_APP_ID || null;
 const REPO = "https://github.com/mmurrs/proxy-arena";
 const DASHBOARD_BASE = process.env.EIGEN_DASHBOARD_BASE || "https://verify.eigencloud.xyz";
-const DASHBOARD = `${DASHBOARD_BASE}/app/${APP_ID}`;
+// Never emit a dead link: no app ID → no dashboard URL (UI shows "pending registration").
+const DASHBOARD = APP_ID ? `${DASHBOARD_BASE}/app/${APP_ID}` : null;
 let BUILT_COMMIT = "unknown";
 try { BUILT_COMMIT = readFileSync("COMMIT", "utf8").trim(); } catch {}
 

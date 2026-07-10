@@ -52,6 +52,7 @@ const status = {
   availableModels: null,   // from /v1/models, null until probed
   activeModel: null,
   lastError: null,
+  lastErrorBody: null,      // first 600 chars of the last non-OK response body
   lastSuccessAt: null,
   calls: 0, failures: 0,
 };
@@ -110,8 +111,17 @@ export async function complete(prompt, { maxTokens = 300, temperature = 0.7 } = 
         signal: AbortSignal.timeout(25000),
       });
       if (!r.ok) {
-        const body = (await r.text()).slice(0, 160);
-        lastErr = new Error(`${model}: HTTP ${r.status} ${body.startsWith("<") ? "(html error page)" : body}`);
+        const body = await r.text();
+        // Fingerprint which layer errored: Cloudflare error pages use IE
+        // conditional comments; Google LB pages say "Error: Server Error".
+        let layer = "";
+        if (body.startsWith("<")) {
+          if (body.includes("[if lt IE 7]") || /cloudflare/i.test(body)) layer = "cloudflare-edge";
+          else if (/server error|google/i.test(body)) layer = "google-lb";
+          else layer = "unknown-html";
+        }
+        status.lastErrorBody = body.slice(0, 600);
+        lastErr = new Error(`${model}: HTTP ${r.status}${layer ? ` (${layer} error page)` : ` ${body.slice(0, 160)}`}`);
         continue; // try next model
       }
       const j = await r.json();
