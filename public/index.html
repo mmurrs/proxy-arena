@@ -68,7 +68,6 @@ body {
   border-radius: 2px;
   border: 1px solid var(--border);
   color: var(--dim);
-  text-transform: lowercase;
 }
 
 .badge.live {
@@ -113,7 +112,6 @@ body {
   font-weight: 600;
   font-size: 13px;
   transition: all 0.15s;
-  text-transform: lowercase;
 }
 
 .tab:hover {
@@ -182,7 +180,6 @@ main {
 .panel h2 {
   margin: 0 0 12px;
   font-size: 12px;
-  text-transform: lowercase;
   letter-spacing: 0.3px;
   color: var(--dim);
   font-weight: 600;
@@ -232,7 +229,6 @@ textarea:focus {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  text-transform: lowercase;
 }
 
 .nation-btn .color-swatch {
@@ -262,7 +258,6 @@ textarea:focus {
   font: 600 13px ui-monospace, monospace;
   cursor: pointer;
   transition: background 0.15s;
-  text-transform: lowercase;
 }
 
 .start-btn:hover:not(:disabled) {
@@ -395,7 +390,6 @@ textarea:focus {
 
 .cell .owner-label {
   font-size: 9px;
-  text-transform: lowercase;
   letter-spacing: 0.3px;
   opacity: 0.7;
   margin-top: 2px;
@@ -473,7 +467,6 @@ textarea:focus {
   font-weight: 600;
   font-size: 13px;
   flex-grow: 1;
-  text-transform: lowercase;
 }
 
 .nation-name.dead {
@@ -484,7 +477,6 @@ textarea:focus {
   color: var(--ink);
   font-size: 10px;
   font-weight: 600;
-  text-transform: lowercase;
   border: 1px solid var(--border);
   padding: 2px 6px;
   border-radius: 2px;
@@ -506,7 +498,6 @@ textarea:focus {
 .nation-stat-label {
   color: var(--dim);
   font-size: 10px;
-  text-transform: lowercase;
 }
 
 .nation-stat-value {
@@ -696,7 +687,6 @@ textarea:focus {
 .result-stat-label {
   color: var(--dim);
   font-size: 10px;
-  text-transform: lowercase;
 }
 
 .signed-result {
@@ -710,7 +700,6 @@ textarea:focus {
 .signed-result h4 {
   margin: 0 0 8px;
   font-size: 11px;
-  text-transform: lowercase;
   letter-spacing: 0.3px;
   color: var(--dim);
 }
@@ -744,7 +733,6 @@ textarea:focus {
 .attestation-block h4 {
   margin: 0 0 8px;
   font-size: 11px;
-  text-transform: lowercase;
   letter-spacing: 0.3px;
   color: var(--dim);
 }
@@ -814,7 +802,6 @@ textarea:focus {
   font: 600 11px ui-monospace, monospace;
   cursor: pointer;
   margin-top: 8px;
-  text-transform: lowercase;
 }
 
 .verify-btn:hover {
@@ -892,7 +879,6 @@ textarea:focus {
   font: 600 12px ui-monospace, monospace;
   cursor: pointer;
   transition: all 0.15s;
-  text-transform: lowercase;
 }
 
 .refresh-btn:hover, .probe-btn:hover {
@@ -915,7 +901,6 @@ textarea:focus {
   font-size: 14px;
   font-weight: 600;
   color: var(--ink);
-  text-transform: lowercase;
   margin: 0 0 14px;
 }
 
@@ -939,7 +924,6 @@ textarea:focus {
 .context-label {
   font-size: 10px;
   font-weight: 600;
-  text-transform: lowercase;
   letter-spacing: 0.5px;
   color: var(--dim);
   border-bottom: 1px solid var(--border);
@@ -959,6 +943,22 @@ textarea:focus {
   font-size: 11px;
   color: var(--dim);
   line-height: 1.5;
+}
+
+.board-explainer {
+  font-size: 12px;
+  color: var(--dim);
+  max-width: 480px;
+  margin: 16px auto 0;
+  line-height: 1.5;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+/* Context grid inside the arena empty state: prose reads left-aligned */
+.empty-state .context-grid {
+  text-align: left;
+  margin-bottom: 24px;
 }
 
 .proof-card {
@@ -981,7 +981,6 @@ textarea:focus {
   font-size: 14px;
   font-weight: 600;
   color: var(--ink);
-  text-transform: lowercase;
 }
 
 .proof-status {
@@ -989,7 +988,6 @@ textarea:focus {
   border-radius: 2px;
   font-size: 10px;
   font-weight: 600;
-  text-transform: lowercase;
   border: 1px solid var(--border);
 }
 
@@ -1057,7 +1055,6 @@ textarea:focus {
   font-size: 10px;
   cursor: pointer;
   transition: background 0.15s;
-  text-transform: lowercase;
 }
 
 .copy-btn:hover, .link-btn:hover {
@@ -1148,7 +1145,7 @@ textarea:focus {
     <span class="label">status:</span>
     <span id="enclaveStatus" class="badge demo">
       <span class="dot"></span>
-      <span>checking...</span>
+      <span>Checking...</span>
     </span>
   </div>
   <div id="modelStatus" style="display:none;">
@@ -1163,8 +1160,8 @@ textarea:focus {
 
 <!-- Tabs -->
 <div class="tabs">
-  <div class="tab active" data-tab="arena">arena</div>
-  <div class="tab" data-tab="verify">verify</div>
+  <div class="tab active" data-tab="arena">Arena</div>
+  <div class="tab" data-tab="verify">Verify</div>
 </div>
 
 <!-- Arena tab -->
@@ -1172,10 +1169,10 @@ textarea:focus {
   <main>
     <!-- Strategy panel -->
     <section class="panel">
-      <h2>your strategy</h2>
+      <h2>Your strategy</h2>
       <textarea id="strategy" spellcheck="false" placeholder="write plain-english orders for your nation...">expand into neutral land early, build economy once you hold a base, attack only rivals weaker than you, and honor alliances until betrayal clearly wins.</textarea>
 
-      <h2 style="margin-top: 16px;">play as</h2>
+      <h2 style="margin-top: 16px;">Play as</h2>
       <div class="nation-picker">
         <button class="nation-btn selected" data-nation="Crimson">
           <span class="color-swatch" style="background: var(--crimson);"></span>
@@ -1195,7 +1192,7 @@ textarea:focus {
         </button>
       </div>
 
-      <button id="startBtn" class="start-btn">[ start match ]</button>
+      <button id="startBtn" class="start-btn">[ Start match ]</button>
 
       <div class="hint">
         your nation is steered by an llm reading these orders. rivals follow built-in doctrines.
@@ -1205,18 +1202,36 @@ textarea:focus {
 
     <!-- Board panel -->
     <section class="panel" id="boardWrap">
-      <h2 style="align-self: flex-start;">board</h2>
+      <h2 style="align-self: flex-start;">Board</h2>
 
       <div id="emptyState" class="empty-state">
         <div class="empty-state-hero">
-          the match and its result provably came from the enclave — and you can check.
+          If you want many participants in an eval, competition, or market — the results have to be provable, not promised. This arena shows how.
         </div>
-        <h3>an ai-vs-ai strategy game you don't have to trust</h3>
+
+        <div class="context-grid">
+          <div class="context-card">
+            <div class="context-label">The problem today</div>
+            <p>Every AI arena and benchmark runs on trust in the operator. A disputed score can't be re-checked, a suspicious result can't be re-run, and if money or rankings ride on the outcome, "the operator is honest" is the whole security model. That caps who participates and what results are good for.</p>
+          </div>
+          <div class="context-card">
+            <div class="context-label">What this demo shows</div>
+            <p>A full match — game engine, AI reasoning, final score — executes inside a TEE on EigenCompute, built provably from public code. The result comes back signed by the enclave. One click checks it. Disputes end with a signature check, not a support ticket.</p>
+          </div>
+          <div class="context-card">
+            <div class="context-label">What that unlocks</div>
+            <p><strong>Pay on results</strong> — prize pools, staked competitions, benchmark-triggered payouts, safe because scores can't be faked. <strong>Cite results</strong> — scores that hold up outside the platform that produced them. <strong>Scale participation</strong> — strangers compete on equal footing because nobody, including the operator, can tilt the outcome.</p>
+          </div>
+        </div>
+
+        <h3>How a match works</h3>
         <ol>
-          <li><strong>write orders in plain english</strong> — your nation's standing strategy: when to expand, who to ally, when to betray, when to nuke.</li>
-          <li><strong>four ai nations fight it out on the server</strong> — the game engine and the ai's reasoning run inside an eigencompute tee, not in your browser and not on a machine anyone can tamper with.</li>
-          <li><strong>the result comes back signed by the enclave</strong> — one signature check proves the outcome came from this exact code running in this exact enclave. nobody — including the people who deployed it — could forge it. see the <em>verify</em> tab for every claim and how to check it.</li>
+          <li><strong>Write orders in plain English</strong> — your nation's standing strategy: when to expand, who to ally, when to betray, when to nuke.</li>
+          <li><strong>Four AI nations fight it out</strong> — inside the TEE, not in your browser and not on a machine anyone can tamper with.</li>
+          <li><strong>The result comes back enclave-signed</strong> — verify it with one click, or check every claim on the <em>Verify</em> tab.</li>
         </ol>
+
+        <p class="board-explainer">The board: each tile shows its troop count; the fill color is its owner. Captures flash, nukes flatten stacks, and whoever holds the most territory at turn 60 wins.</p>
       </div>
 
       <div id="boardArea" style="display:none; width:100%;">
@@ -1228,23 +1243,23 @@ textarea:focus {
         <div class="legend">
           <div class="legend-item">
             <div class="legend-color" style="background: var(--crimson);"></div>
-            <span>crimson</span>
+            <span>Crimson</span>
           </div>
           <div class="legend-item">
             <div class="legend-color" style="background: var(--azure);"></div>
-            <span>azure</span>
+            <span>Azure</span>
           </div>
           <div class="legend-item">
             <div class="legend-color" style="background: var(--verdant);"></div>
-            <span>verdant</span>
+            <span>Verdant</span>
           </div>
           <div class="legend-item">
             <div class="legend-color" style="background: var(--amber);"></div>
-            <span>amber</span>
+            <span>Amber</span>
           </div>
           <div class="legend-item">
             <div class="legend-color" style="background: var(--neutral-fill);"></div>
-            <span>neutral</span>
+            <span>Neutral</span>
           </div>
         </div>
       </div>
@@ -1254,13 +1269,13 @@ textarea:focus {
 
     <!-- Intel panel -->
     <section class="panel">
-      <h2>nations</h2>
+      <h2>Nations</h2>
       <div id="nationsList" class="nations-list"></div>
 
-      <h2 style="margin-top: 20px;">your ai's thinking</h2>
+      <h2 style="margin-top: 20px;">Your AI's thinking</h2>
       <div id="planDisplay"></div>
 
-      <h2 style="margin-top: 20px;">event feed</h2>
+      <h2 style="margin-top: 20px;">Event feed</h2>
       <div class="event-feed" id="eventFeed"></div>
     </section>
   </main>
@@ -1270,45 +1285,34 @@ textarea:focus {
 <div class="tab-content" id="verifyTab">
   <div class="verify-container">
     <div class="verify-headline" id="verifyHeadline">
-      proxywar arena runs on eigencompute — every claim below is checkable.
+      Every claim below is checkable — artifact, method, one step each.
     </div>
 
     <div class="verify-actions">
-      <button class="refresh-btn" id="refreshVerify">↻ refresh status</button>
-      <button class="probe-btn" id="probeModels">🔍 probe models</button>
+      <button class="refresh-btn" id="refreshVerify">↻ Refresh status</button>
+      <button class="probe-btn" id="probeModels">🔍 Probe models</button>
     </div>
 
     <div class="proof-cards" id="proofCards"></div>
 
     <div class="context-block">
-      <h3>$ why this exists</h3>
+      <h3>$ Where this goes</h3>
       <div class="context-grid">
         <div class="context-card">
-          <div class="context-label">the gap</div>
-          <p>agent arenas and eval platforms today are trusted operators. results are unsigned,
-          replays aren't bound to scores, and leaderboards can't be recomputed by outsiders —
-          every claim bottoms out at "trust our servers." fine at zero stakes. broken the moment
-          a result carries money, a ranking, or a research claim.</p>
+          <div class="context-label">The pattern</div>
+          <p>Same shape as <a href="https://ecdsa.fail" target="_blank" rel="noopener">ecdsa.fail</a> (Eigen Labs): an open challenge where anyone can participate and progress is scored on a public board. The missing piece in every arena like it is that the scores rest on the operator's word — this demo adds the receipts.</p>
         </div>
         <div class="context-card">
-          <div class="context-label">what this fills</div>
-          <p>the same match, with evidence. engine + ai reasoning execute in a tee, the build
-          provably matches public source, and every result ships with an enclave signature
-          anyone can check in one step. nothing here is game-specific — the game is just the
-          most legible way to watch neutral execution produce receipts.</p>
+          <div class="context-label">Beyond games</div>
+          <p>Nothing here is game-specific. The same three proofs — code runs in a TEE, build matches public source, results come back signed — apply to any open benchmark, model eval, or market where many participants need to trust one outcome they didn't compute themselves.</p>
         </div>
         <div class="context-card">
-          <div class="context-label">the opportunity for eigencompute</div>
-          <p>every arena, benchmark, and rl-eval vendor has this gap (0 of 38 vendors ship any
-          attestation). eigencloud already runs staked verified tournaments for human players —
-          this extends the same rail to agent players: attested evals as a service, signed
-          leaderboards, and stakes on agent competition. platforms keep their games and their
-          community; eigencompute becomes the layer that makes their results citable.</p>
+          <div class="context-label">The EigenCompute play</div>
+          <p>EigenCloud already runs staked, verified tournaments for human players (OpenFront). This is that rail extended to AI participants: attested evals, signed leaderboards, and competitions where results can carry money because nobody can fake them. Platforms keep their games and communities; EigenCompute supplies the proof layer.</p>
         </div>
       </div>
-      <p class="context-note">note: this demo is self-contained — results are not sent to softmax
-      or any external platform. it exists to show what any arena gains from running on attested
-      compute.</p>
+      <p class="context-note">This demo is self-contained — results are not sent to Softmax or any
+      external platform. It exists to show what any arena gains from running on attested compute.</p>
     </div>
   </div>
 </div>
@@ -1333,17 +1337,17 @@ const COPY = {
     hold: "🛡️",
     elimination: "🏳️"
   },
-  EMPTY_PLAN: "waiting for first plan...",
+  EMPTY_PLAN: "Waiting for first plan...",
 
   // status strip — the page's honest heartbeat
-  STATUS_TEE: "running on eigencompute (tee)",
-  STATUS_LOCAL: "local demo — not in an enclave",
-  NOW_ENGINE_TEE: "game engine executing in the enclave",
-  NOW_ENGINE_LOCAL: "game engine running locally",
-  NOW_LLM_ON: (model) => "nations steered by " + (model || "an llm") + " via the attested gateway",
-  NOW_LLM_FALLBACK: "nations on built-in doctrine (llm gateway unavailable right now)",
-  NOW_SIGNED: "match results enclave-signed",
-  NOW_UNSIGNED: "match results unsigned (no enclave key here)",
+  STATUS_TEE: "Running on EigenCompute (TEE)",
+  STATUS_LOCAL: "Local demo — not in an enclave",
+  NOW_ENGINE_TEE: "Game engine executing in the enclave",
+  NOW_ENGINE_LOCAL: "Game engine running locally",
+  NOW_LLM_ON: (model) => "Nations steered by " + (model || "an LLM") + " via the attested gateway",
+  NOW_LLM_FALLBACK: "Nations on built-in doctrine (LLM gateway unavailable right now)",
+  NOW_SIGNED: "Match results enclave-signed",
+  NOW_UNSIGNED: "Match results unsigned (no enclave key here)",
 };
 
 // --- State ---
@@ -1423,7 +1427,7 @@ async function startMatch() {
   state.nationTileCount = {};
 
   $('#startBtn').disabled = true;
-  $('#startBtn').textContent = '[ match running... ]';
+  $('#startBtn').textContent = '[ Match running... ]';
   state.matchRunning = true;
 
   const body = {
@@ -1482,7 +1486,7 @@ async function startMatch() {
 
     state.es.addEventListener('done', () => {
       $('#startBtn').disabled = false;
-      $('#startBtn').textContent = '[ start match ]';
+      $('#startBtn').textContent = '[ Start match ]';
       state.matchRunning = false;
       if (state.es) {
         state.es.close();
@@ -1491,9 +1495,9 @@ async function startMatch() {
     });
 
   } catch (err) {
-    console.error('Failed to start match:', err);
+    console.error('Failed to Start match:', err);
     $('#startBtn').disabled = false;
-    $('#startBtn').textContent = '[ start match ]';
+    $('#startBtn').textContent = '[ Start match ]';
     state.matchRunning = false;
   }
 }
@@ -1576,7 +1580,7 @@ function renderNations(nations) {
       <div class="nation-card ${isDead ? 'dead' : ''} ${isYours ? 'yours' : ''}">
         <div class="nation-header">
           <div class="nation-dot" style="background: ${COPY.NATION_COLORS[n.id]};"></div>
-          <div class="nation-name ${isDead ? 'dead' : ''}">${n.name.toLowerCase()}</div>
+          <div class="nation-name ${isDead ? 'dead' : ''}">${n.name}</div>
           ${isYours ? '<div class="nation-you">you</div>' : ''}
         </div>
         <div class="nation-stats">
@@ -1595,7 +1599,7 @@ function renderNations(nations) {
         </div>
         ${n.allies.length > 0 ? `
           <div class="nation-allies">
-            ${n.allies.map(a => `<div class="ally-chip">🤝 ${a.toLowerCase()}</div>`).join('')}
+            ${n.allies.map(a => `<div class="ally-chip">🤝 ${a}</div>`).join('')}
           </div>
         ` : ''}
       </div>
@@ -1637,17 +1641,17 @@ function addEvent(log) {
 
   // Friendlier messages
   if (kind === 'expand') {
-    message = `${nation.toLowerCase()} expanded — ${detail}`;
+    message = `${nation} expanded — ${detail}`;
   } else if (kind === 'attack') {
-    message = `${nation.toLowerCase()} attacked — ${detail}`;
+    message = `${nation} attacked — ${detail}`;
   } else if (kind === 'build') {
-    message = `${nation.toLowerCase()} built — ${detail}`;
+    message = `${nation} built — ${detail}`;
   } else if (kind === 'alliance_request') {
-    message = `${nation.toLowerCase()} — ${detail}`;
+    message = `${nation} — ${detail}`;
   } else if (kind === 'betray') {
-    message = `${nation.toLowerCase()} — ${detail}`;
+    message = `${nation} — ${detail}`;
   } else if (kind === 'nuke') {
-    message = `${nation.toLowerCase()} — ${detail}`;
+    message = `${nation} — ${detail}`;
     // Flash nuke animation on the board
     const match = detail.match(/tile (\d+)/);
     if (match) {
@@ -1659,7 +1663,7 @@ function addEvent(log) {
       }
     }
   } else if (kind === 'hold') {
-    message = `${nation.toLowerCase()} held position`;
+    message = `${nation} held position`;
   }
 
   const eventEl = document.createElement('div');
@@ -1680,7 +1684,7 @@ function addEliminationEvent(nationName) {
   eventEl.className = 'event elimination';
   eventEl.innerHTML = `
     <span class="event-icon">${COPY.EVENT_ICONS.elimination}</span>
-    <span><strong>${nationName.toLowerCase()} has been eliminated!</strong></span>
+    <span><strong>${nationName} has been eliminated!</strong></span>
   `;
   const feed = $('#eventFeed');
   feed.appendChild(eventEl);
@@ -1694,7 +1698,7 @@ function renderResult(result) {
   let html = `
     <div class="result-card">
       <div class="result-winner">
-        ${tuple.winner ? `🏆 ${tuple.winner.toLowerCase()} wins!` : 'match complete'}
+        ${tuple.winner ? `🏆 ${tuple.winner} wins!` : 'match complete'}
       </div>
       <div class="result-stats">
         <div>
@@ -1820,7 +1824,7 @@ async function loadVerifyData() {
 }
 
 function renderVerifyData(data) {
-  $('#verifyHeadline').textContent = data.headline.toLowerCase();
+  $('#verifyHeadline').textContent = data.headline;
 
   const cards = [
     {
@@ -1960,10 +1964,10 @@ async function updateEnclaveStatus(data) {
   const now = data.now || {};
   if (now.engineInTee) {
     badge.className = 'badge live';
-    badge.innerHTML = '<span class="dot"></span><span>' + COPY.STATUS_TEE.toLowerCase() + '</span>';
+    badge.innerHTML = '<span class="dot"></span><span>' + COPY.STATUS_TEE + '</span>';
   } else {
     badge.className = 'badge demo';
-    badge.innerHTML = '<span class="dot"></span><span>' + COPY.STATUS_LOCAL.toLowerCase() + '</span>';
+    badge.innerHTML = '<span class="dot"></span><span>' + COPY.STATUS_LOCAL + '</span>';
   }
   let nowBar = $('#nowBar');
   if (!nowBar) {
@@ -1977,9 +1981,9 @@ async function updateEnclaveStatus(data) {
     '<span style="width:6px;height:6px;border-radius:0;background:' + (ok ? 'var(--ok)' : 'var(--degraded)') + '"></span>' +
     text + '</span>';
   nowBar.innerHTML =
-    chip(now.engineInTee, now.engineInTee ? COPY.NOW_ENGINE_TEE.toLowerCase() : COPY.NOW_ENGINE_LOCAL.toLowerCase()) +
-    chip(now.llmSteering, now.llmSteering ? COPY.NOW_LLM_ON(data.modelAccess && data.modelAccess.activeModel).toLowerCase() : COPY.NOW_LLM_FALLBACK.toLowerCase()) +
-    chip(now.resultsSigned, now.resultsSigned ? COPY.NOW_SIGNED.toLowerCase() : COPY.NOW_UNSIGNED.toLowerCase());
+    chip(now.engineInTee, now.engineInTee ? COPY.NOW_ENGINE_TEE : COPY.NOW_ENGINE_LOCAL) +
+    chip(now.llmSteering, now.llmSteering ? COPY.NOW_LLM_ON(data.modelAccess && data.modelAccess.activeModel) : COPY.NOW_LLM_FALLBACK) +
+    chip(now.resultsSigned, now.resultsSigned ? COPY.NOW_SIGNED : COPY.NOW_UNSIGNED);
 }
 
 async function init() {
