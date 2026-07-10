@@ -83,6 +83,7 @@ app.get("/api/verify", async (_req, res) => {
       failures: gw.failures,
       lastSuccessAt: gw.lastSuccessAt,
       lastError: gw.lastError,
+      lastErrorBody: gw.lastErrorBody,
       how: "Every nation's PLAN is written by a model reached through the Eigen AI gateway, authenticated with a JWT minted from this enclave's attestation — no API key exists in this container.",
     },
     resultSigning: {

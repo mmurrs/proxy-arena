@@ -146,9 +146,9 @@ main {
     grid-template-columns: 1fr;
   }
 
-  main section:nth-child(1) { order: 3; }
-  main section:nth-child(2) { order: 1; }
-  main section:nth-child(3) { order: 2; }
+  main section:nth-child(1) { order: 1; }
+  main section:nth-child(2) { order: 2; }
+  main section:nth-child(3) { order: 3; }
 }
 
 @media (max-width: 480px) {
@@ -1169,40 +1169,40 @@ textarea:focus {
   <main>
     <!-- Strategy panel -->
     <section class="panel">
-      <h2>Your strategy</h2>
-      <textarea id="strategy" spellcheck="false" placeholder="write plain-english orders for your nation...">expand into neutral land early, build economy once you hold a base, attack only rivals weaker than you, and honor alliances until betrayal clearly wins.</textarea>
+      <h2>1 · Your strategy</h2>
+      <textarea id="strategy" spellcheck="false" placeholder="Write plain-English orders for your nation...">Expand into neutral land early, build economy once you hold a base, attack only rivals weaker than you, and honor alliances until betrayal clearly wins.</textarea>
 
       <h2 style="margin-top: 16px;">Play as</h2>
       <div class="nation-picker">
         <button class="nation-btn selected" data-nation="Crimson">
           <span class="color-swatch" style="background: var(--crimson);"></span>
-          crimson
+          Crimson
         </button>
         <button class="nation-btn" data-nation="Azure">
           <span class="color-swatch" style="background: var(--azure);"></span>
-          azure
+          Azure
         </button>
         <button class="nation-btn" data-nation="Verdant">
           <span class="color-swatch" style="background: var(--verdant);"></span>
-          verdant
+          Verdant
         </button>
         <button class="nation-btn" data-nation="Amber">
           <span class="color-swatch" style="background: var(--amber);"></span>
-          amber
+          Amber
         </button>
       </div>
 
-      <button id="startBtn" class="start-btn">[ Start match ]</button>
+      <button id="startBtn" class="start-btn">[ 2 · Start match ]</button>
 
       <div class="hint">
-        your nation is steered by an llm reading these orders. rivals follow built-in doctrines.
-        same seed produces the same match — determinism is what makes results verifiable.
+        Your nation is steered by an LLM reading these orders. Rivals follow built-in doctrines.
+        Same seed produces the same match — determinism is what makes results verifiable.
       </div>
     </section>
 
     <!-- Board panel -->
     <section class="panel" id="boardWrap">
-      <h2 style="align-self: flex-start;">Board</h2>
+      <h2 style="align-self: flex-start;">3 · The battlefield</h2>
 
       <div id="emptyState" class="empty-state">
         <div class="empty-state-hero">
@@ -1212,23 +1212,23 @@ textarea:focus {
         <div class="context-grid">
           <div class="context-card">
             <div class="context-label">The problem today</div>
-            <p>Every AI arena and benchmark runs on trust in the operator. A disputed score can't be re-checked, a suspicious result can't be re-run, and if money or rankings ride on the outcome, "the operator is honest" is the whole security model. That caps who participates and what results are good for.</p>
+            <p>Permissionless open evals — where an operator hosts a benchmark and strangers submit entries to a public leaderboard — rest entirely on the operator's word. A compromised or buggy harness produces scores indistinguishable from legitimate ones. If the eval leaks or accepts self-reported results, entrants can inflate scores. To block that, operators re-run everything centrally and vet submissions by hand — which is why participation requires permission in the first place. A score from one operator means nothing to another lab without re-running, because there is no portable receipt.</p>
           </div>
           <div class="context-card">
             <div class="context-label">What this demo shows</div>
-            <p>A full match — game engine, AI reasoning, final score — executes inside a TEE on EigenCompute, built provably from public code. The result comes back signed by the enclave. One click checks it. Disputes end with a signature check, not a support ticket.</p>
+            <p>A full match — game engine, AI reasoning, final score — executes inside a TEE on EigenCompute, built provably from public code. The result comes back signed by the enclave. One click checks it. Disputes end with a signature check, not a support ticket. Attestation proves the eval ran faithfully; it does not prove the eval is well-designed — game-design quality stays a human problem.</p>
           </div>
           <div class="context-card">
             <div class="context-label">What that unlocks</div>
-            <p><strong>Pay on results</strong> — prize pools, staked competitions, benchmark-triggered payouts, safe because scores can't be faked. <strong>Cite results</strong> — scores that hold up outside the platform that produced them. <strong>Scale participation</strong> — strangers compete on equal footing because nobody, including the operator, can tilt the outcome.</p>
+            <p>A $10k prize pool that pays the top-3 automatically on signed scores. An eval where anyone can submit — entry fee $1, no account review — because a fake score is cryptographically impossible. A lab citing an external benchmark number in a model card because the run is attested and the score travels. The same pattern as ecdsa.fail (Eigen Labs' own open challenge board) but with receipts for every result.</p>
           </div>
         </div>
 
         <h3>How a match works</h3>
         <ol>
-          <li><strong>Write orders in plain English</strong> — your nation's standing strategy: when to expand, who to ally, when to betray, when to nuke.</li>
-          <li><strong>Four AI nations fight it out</strong> — inside the TEE, not in your browser and not on a machine anyone can tamper with.</li>
-          <li><strong>The result comes back enclave-signed</strong> — verify it with one click, or check every claim on the <em>Verify</em> tab.</li>
+          <li><strong>Write orders on the left</strong> — your nation's standing strategy: when to expand, who to ally, when to betray, when to nuke.</li>
+          <li><strong>Press Start, then watch the battlefield</strong> — four AI nations fight inside the TEE, not in your browser and not on a machine anyone can tamper with.</li>
+          <li><strong>Check the signed result on the right</strong> — verify it with one click, or check every claim on the <em>Verify</em> tab.</li>
         </ol>
 
         <p class="board-explainer">The board: each tile shows its troop count; the fill color is its owner. Captures flash, nukes flatten stacks, and whoever holds the most territory at turn 60 wins.</p>
@@ -1269,7 +1269,7 @@ textarea:focus {
 
     <!-- Intel panel -->
     <section class="panel">
-      <h2>Nations</h2>
+      <h2>4 · Intel + result</h2>
       <div id="nationsList" class="nations-list"></div>
 
       <h2 style="margin-top: 20px;">Your AI's thinking</h2>
@@ -1300,19 +1300,18 @@ textarea:focus {
       <div class="context-grid">
         <div class="context-card">
           <div class="context-label">The pattern</div>
-          <p>Same shape as <a href="https://ecdsa.fail" target="_blank" rel="noopener">ecdsa.fail</a> (Eigen Labs): an open challenge where anyone can participate and progress is scored on a public board. The missing piece in every arena like it is that the scores rest on the operator's word — this demo adds the receipts.</p>
+          <p>Same shape as <a href="https://ecdsa.fail" target="_blank" rel="noopener">ecdsa.fail</a> (Eigen Labs' own open challenge): an operator hosts a game, strangers submit entries, a leaderboard ranks them. The missing piece in every arena like it is that the operator's scores are just database rows — this demo adds cryptographic receipts so results are checkable, not promised.</p>
         </div>
         <div class="context-card">
           <div class="context-label">Beyond games</div>
-          <p>Nothing here is game-specific. The same three proofs — code runs in a TEE, build matches public source, results come back signed — apply to any open benchmark, model eval, or market where many participants need to trust one outcome they didn't compute themselves.</p>
+          <p>Nothing here is game-specific. The same three proofs — code runs in a TEE, build matches public source, results come back signed — apply to any permissionless open eval where strangers need to trust one outcome they didn't compute themselves. Model benchmarks, agent competitions, prediction markets.</p>
         </div>
         <div class="context-card">
           <div class="context-label">The EigenCompute play</div>
-          <p>EigenCloud already runs staked, verified tournaments for human players (OpenFront). This is that rail extended to AI participants: attested evals, signed leaderboards, and competitions where results can carry money because nobody can fake them. Platforms keep their games and communities; EigenCompute supplies the proof layer.</p>
+          <p>EigenCloud already runs staked, verified tournaments for human players (OpenFront). This is that rail extended to AI participants: attested evals, signed leaderboards, and competitions where results can trigger automatic payouts because nobody can fake them. Platforms keep their games and communities; EigenCompute supplies the proof layer.</p>
         </div>
       </div>
-      <p class="context-note">This demo is self-contained — results are not sent to Softmax or any
-      external platform. It exists to show what any arena gains from running on attested compute.</p>
+      <p class="context-note">This demo is self-contained — results are not sent to Softmax or any external platform. It exists to show what any arena gains from running on attested compute.</p>
     </div>
   </div>
 </div>
@@ -1486,7 +1485,7 @@ async function startMatch() {
 
     state.es.addEventListener('done', () => {
       $('#startBtn').disabled = false;
-      $('#startBtn').textContent = '[ Start match ]';
+      $('#startBtn').textContent = '[ 2 · Start match ]';
       state.matchRunning = false;
       if (state.es) {
         state.es.close();
@@ -1497,7 +1496,7 @@ async function startMatch() {
   } catch (err) {
     console.error('Failed to Start match:', err);
     $('#startBtn').disabled = false;
-    $('#startBtn').textContent = '[ Start match ]';
+    $('#startBtn').textContent = '[ 2 · Start match ]';
     state.matchRunning = false;
   }
 }
@@ -1826,58 +1825,132 @@ async function loadVerifyData() {
 function renderVerifyData(data) {
   $('#verifyHeadline').textContent = data.headline;
 
+  // Helper to derive state sentences for each card
+  const stateText = {
+    enclaveExecution: () => {
+      if (!data.enclave.runningInEnclave) {
+        return "Right now: this instance is running locally, outside a TEE. Deploy to EigenCompute for enclave execution.";
+      }
+      if (!data.enclave.appId) {
+        return "Right now: the enclave is running but the app ID is pending registration — redeploy to bind the ID.";
+      }
+      return "Right now: this match is executing inside a hardware TEE. The verify dashboard binds the app ID to the attested image digest.";
+    },
+    verifiableBuild: () => {
+      if (data.build.commit === 'unknown') {
+        return "Right now: no build provenance is available — commit hash unknown.";
+      }
+      return `Right now: this image was built from commit ${data.build.commit.slice(0, 7)}. Compare the dashboard's image digest with a local rebuild of the same commit to check it.`;
+    },
+    modelAccess: () => {
+      const gw = data.modelAccess;
+      if (!gw.attestationJwt) {
+        return "Right now: no attestation JWT is available, so the gateway cannot authenticate calls from the enclave. Nations fall back to built-in doctrines.";
+      }
+      if (gw.lastError) {
+        const errorSnippet = gw.lastError.slice(0, 100);
+        if (gw.lastError.includes('502') || gw.lastError.includes('Bad Gateway')) {
+          return `Right now: the gateway is rejecting calls from inside the enclave (a 502 at the edge), so nations are playing on their built-in fallback strategies. The match still runs and results are still signed — but Claude isn't writing the plans until this clears.`;
+        }
+        return `Right now: model calls are failing (${errorSnippet}...). Nations fall back to built-in doctrines. The match runs and results are signed, but AI-written plans are unavailable.`;
+      }
+      if (!gw.activeModel) {
+        return "Right now: no model has successfully responded yet. First match will probe the gateway.";
+      }
+      return `Right now: ${gw.activeModel} is writing plans for nations via the attested gateway. Calls: ${gw.calls}, failures: ${gw.failures}, last success: ${gw.lastSuccessAt}.`;
+    },
+    resultSigning: () => {
+      if (!data.resultSigning.available) {
+        return "Right now: no enclave key is available (local mode), so match results are unsigned.";
+      }
+      if (!data.enclave.dashboard) {
+        return "Right now: the enclave key is available and results will be signed, but the app is not yet registered — redeploy to bind the key address to the app ID on the verify dashboard.";
+      }
+      return `Right now: match results are signed with the enclave-derived key (${data.resultSigning.enclaveAddress}). The verify dashboard lists this address publicly.`;
+    },
+    runtimeAttestation: () => {
+      const att = data.runtimeAttestation;
+      if (!att.configured) {
+        return "Right now: no KMS attestation config is available (local mode), so per-action attestation is unavailable.";
+      }
+      if (att.lastError) {
+        return `Right now: runtime attestation is configured but the last request failed (${att.lastError.slice(0, 80)}...). Results still get wallet-signed.`;
+      }
+      if (att.attestations === 0) {
+        return "Right now: runtime attestation is configured. First match completion will request a fresh attestation whose extra-data is the SHA-512 of the result.";
+      }
+      return `Right now: runtime attestation is working. ${att.attestations} attestations minted, last at ${att.lastAttestAt}. Each JWT's extra-data is the SHA-512 of the canonical result message.`;
+    }
+  };
+
+  // Derive status from ALL claims in each card
+  const enclaveStatus = data.enclave.runningInEnclave && data.enclave.appId ? 'ok' : (data.enclave.runningInEnclave ? 'degraded' : 'unavailable');
+  const buildStatus = data.build.commit !== 'unknown' ? 'ok' : 'unavailable';
+  const modelStatus = data.modelAccess.lastError ? 'degraded' : (data.modelAccess.activeModel ? 'ok' : 'unavailable');
+  const signingStatus = data.resultSigning.available && data.enclave.dashboard ? 'ok' : (data.resultSigning.available ? 'degraded' : 'unavailable');
+  const attestStatus = data.runtimeAttestation.configured ? (data.runtimeAttestation.lastError ? 'degraded' : 'verified') : 'unavailable';
+
   const cards = [
     {
-      title: '1. enclave execution',
-      status: data.enclave.runningInEnclave ? 'ok' : 'unavailable',
+      title: '1. Enclave execution',
+      status: enclaveStatus,
+      stateProse: stateText.enclaveExecution(),
       how: data.enclave.how,
       artifact: data.enclave.appId,
+      artifactPending: !data.enclave.appId && data.enclave.runningInEnclave,
       link: data.enclave.dashboard,
-      linkText: 'view on eigencloud verify dashboard'
+      linkText: 'View on EigenCloud verify dashboard'
     },
     {
-      title: '2. verifiable build',
-      status: data.build.commit !== 'unknown' ? 'ok' : 'unavailable',
+      title: '2. Verifiable build',
+      status: buildStatus,
+      stateProse: stateText.verifiableBuild(),
       how: data.build.how,
-      artifact: `${data.build.repo}/tree/${data.build.commit}`,
+      artifact: data.build.commit !== 'unknown' ? `${data.build.repo}/tree/${data.build.commit}` : null,
       link: data.build.commitUrl,
-      linkText: 'view commit on github'
+      linkText: 'View commit on GitHub'
     },
     {
-      title: '3. model access',
-      status: data.modelAccess.lastError ? 'degraded' : (data.modelAccess.activeModel ? 'ok' : 'unavailable'),
+      title: '3. Model access',
+      status: modelStatus,
+      stateProse: stateText.modelAccess(),
       how: data.modelAccess.how,
       details: [
-        { label: 'gateway', value: data.modelAccess.gateway },
-        { label: 'attestation jwt', value: data.modelAccess.attestationJwt ? 'present' : 'not available' },
-        { label: 'active model', value: data.modelAccess.activeModel || 'none' },
-        { label: 'calls / failures', value: `${data.modelAccess.calls} / ${data.modelAccess.failures}` },
-        { label: 'last success', value: data.modelAccess.lastSuccessAt || 'never' }
+        { label: 'Gateway', value: data.modelAccess.gateway },
+        { label: 'Attestation JWT', value: data.modelAccess.attestationJwt ? 'present' : 'not available' },
+        { label: 'Active model', value: data.modelAccess.activeModel || 'none' },
+        { label: 'Calls / failures', value: `${data.modelAccess.calls} / ${data.modelAccess.failures}` },
+        { label: 'Last success', value: data.modelAccess.lastSuccessAt || 'never' }
       ],
       availableModels: data.modelAccess.availableModels,
-      error: data.modelAccess.lastError
+      error: data.modelAccess.lastError,
+      errorBody: data.modelAccess.lastErrorBody
     },
     {
-      title: '4. result signing',
-      status: data.resultSigning.available ? 'ok' : 'unavailable',
+      title: '4. Result signing',
+      status: signingStatus,
+      stateProse: stateText.resultSigning(),
       how: data.resultSigning.how,
       artifact: data.resultSigning.enclaveAddress,
+      artifactPending: data.resultSigning.available && !data.enclave.dashboard,
       link: data.enclave.dashboard
     },
     {
-      title: '5. runtime attestation',
-      status: data.runtimeAttestation.configured ? (data.runtimeAttestation.lastError ? 'degraded' : 'verified') : 'unavailable',
+      title: '5. Runtime attestation',
+      status: attestStatus,
+      stateProse: stateText.runtimeAttestation(),
       how: data.runtimeAttestation.how,
       details: data.runtimeAttestation.configured ? [
-        { label: 'audience', value: data.runtimeAttestation.audience || 'none' },
-        { label: 'attestations', value: data.runtimeAttestation.attestations },
-        { label: 'last attested', value: data.runtimeAttestation.lastAttestAt || 'never' }
+        { label: 'Audience', value: data.runtimeAttestation.audience || 'none' },
+        { label: 'Attestations', value: data.runtimeAttestation.attestations },
+        { label: 'Last attested', value: data.runtimeAttestation.lastAttestAt || 'never' }
       ] : null,
       error: data.runtimeAttestation.lastError
     },
     {
-      title: '6. determinism',
+      title: '6. Determinism',
       status: 'verified',
+      stateProse: 'Right now: the engine is a pure function of (seed, decision log). Re-run the public engine code with the signed seed and decisions to reproduce the exact final board.',
       how: data.determinism.how
     }
   ];
@@ -1889,23 +1962,30 @@ function renderVerifyData(data) {
           <div class="proof-title">${card.title}</div>
           <div class="proof-status ${card.status}">${card.status}</div>
         </div>
-        <div class="proof-how">${card.how}</div>
+        <div class="proof-how"><strong>What this proves when green:</strong> ${card.how}</div>
+        <div class="proof-how" style="margin-top:10px;"><strong>Right now:</strong> ${card.stateProse}</div>
     `;
 
-    if (card.artifact) {
+    if (card.artifactPending) {
+      cardHtml += `
+        <div class="proof-artifact" style="background: rgba(210, 153, 34, 0.08); border-color: var(--degraded);">
+          <div class="artifact-text" style="color: var(--degraded); font-style: italic;">Pending registration — redeploy will bind ID</div>
+        </div>
+      `;
+    } else if (card.artifact) {
       cardHtml += `
         <div class="proof-artifact">
           <div class="artifact-text">${card.artifact}</div>
           <div class="artifact-actions">
-            <button class="copy-btn" onclick="copyToClipboard('${card.artifact}', this)">copy</button>
-            ${card.link ? `<button class="link-btn" onclick="window.open('${card.link}', '_blank')">open</button>` : ''}
+            <button class="copy-btn" onclick="copyToClipboard('${card.artifact}', this)">Copy</button>
+            ${card.link ? `<button class="link-btn" onclick="window.open('${card.link}', '_blank')">Open</button>` : ''}
           </div>
         </div>
       `;
     }
 
     if (card.details) {
-      cardHtml += '<div class="proof-details">';
+      cardHtml += '<details class="proof-details" style="margin-top:10px;"><summary style="cursor:pointer;color:var(--dim);font-size:11px;font-weight:600;">Technical details</summary><div style="margin-top:8px;">';
       for (const d of card.details) {
         cardHtml += `
           <div class="detail-row">
@@ -1914,22 +1994,23 @@ function renderVerifyData(data) {
           </div>
         `;
       }
-      cardHtml += '</div>';
+      cardHtml += '</div></details>';
     }
 
     if (card.availableModels && card.availableModels.length > 0) {
-      cardHtml += '<div class="model-chips">';
+      cardHtml += '<details style="margin-top:8px;"><summary style="cursor:pointer;color:var(--dim);font-size:11px;font-weight:600;">Available models</summary><div class="model-chips" style="margin-top:8px;">';
       for (const m of card.availableModels) {
         cardHtml += `<div class="model-chip">${m}</div>`;
       }
-      cardHtml += '</div>';
+      cardHtml += '</div></details>';
     }
 
     if (card.error) {
+      const displayError = card.errorBody || card.error;
       cardHtml += `
         <details class="error-details">
-          <summary>last error</summary>
-          <div style="margin-top:8px;">${card.error}</div>
+          <summary>Last error</summary>
+          <div style="margin-top:8px;">${displayError}</div>
         </details>
       `;
     }
