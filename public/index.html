@@ -4,26 +4,31 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>ProxyWar Arena — Verifiable AI Strategy in a TEE</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0b0e14;
-  --panel: #141924;
-  --edge: #232b3a;
-  --ink: #e6edf3;
-  --dim: #8b98a9;
+  /* Light terminal palette — tinygrad.org inspired */
+  --paper: #fcfcfa;
+  --panel: #f7f7f5;
+  --border: #1a1a1a;
+  --ink: #1a1a1a;
+  --dim: #5a5a5a;
+  --neutral-fill: #e8e8e6;
+
+  /* Nation colors (saturated, for tile fills and dots) */
   --crimson: #e5484d;
   --azure: #4493f8;
   --verdant: #3fb950;
   --amber: #d29922;
-  --neutral: #39414f;
-  --accent: #7c5cff;
 
-  /* Semantic status colors (separate from nation identity) */
-  --success: #3fb950;
-  --warning: #d29922;
+  /* Nation colors darkened ~10% for text-on-light */
+  --crimson-text: #c93d42;
+  --azure-text: #3a7ed6;
+  --verdant-text: #359643;
+  --amber-text: #b5821d;
+
+  /* Semantic status */
+  --ok: #3fb950;
+  --degraded: #d29922;
   --error: #e5484d;
 }
 
@@ -31,23 +36,20 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--paper);
   color: var(--ink);
-  font: 15px/1.5 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font: 14px/1.5 ui-monospace, 'JetBrains Mono', 'IBM Plex Mono', 'SF Mono', Menlo, Monaco, monospace;
 }
-
-/* Spacing scale: 4px rhythm — 4, 8, 12, 16, 20, 24, 32, 40 */
-/* Typography scale: 11px (tiny), 13px (body), 15px (default), 18px (subhead), 24px (headline) */
 
 /* Status bar */
 .statusbar {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 10px 22px;
+  padding: 10px 20px;
   background: var(--panel);
-  border-bottom: 1px solid var(--edge);
-  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
   flex-wrap: wrap;
 }
 
@@ -63,45 +65,44 @@ body {
   font-size: 11px;
   font-weight: 600;
   padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--edge);
+  border-radius: 2px;
+  border: 1px solid var(--border);
   color: var(--dim);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  text-transform: lowercase;
 }
 
 .badge.live {
-  color: var(--success);
-  border-color: #1f6f37;
+  color: var(--ok);
+  border-color: var(--ok);
   background: rgba(63, 185, 80, 0.08);
 }
 
 .badge.demo {
-  color: var(--warning);
-  border-color: #7a5b13;
+  color: var(--degraded);
+  border-color: var(--degraded);
   background: rgba(210, 153, 34, 0.08);
 }
 
 .badge .dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: 0;
   background: currentColor;
-  animation: pulse 2s ease-in-out infinite;
+  animation: blink 1.2s step-end infinite;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }
 
 /* Tabs */
 .tabs {
   display: flex;
-  gap: 4px;
-  padding: 0 22px;
+  gap: 0;
+  padding: 0 20px;
   background: var(--panel);
-  border-bottom: 1px solid var(--edge);
+  border-bottom: 1px solid var(--border);
 }
 
 .tab {
@@ -110,8 +111,9 @@ body {
   border-bottom: 2px solid transparent;
   color: var(--dim);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   transition: all 0.15s;
+  text-transform: lowercase;
 }
 
 .tab:hover {
@@ -119,8 +121,8 @@ body {
 }
 
 .tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
+  color: var(--ink);
+  border-bottom-color: var(--ink);
 }
 
 /* Tab content */
@@ -135,9 +137,9 @@ body {
 /* Main layout */
 main {
   display: grid;
-  grid-template-columns: 320px 1fr 360px;
+  grid-template-columns: 300px 1fr 340px;
   gap: 16px;
-  padding: 16px 22px;
+  padding: 16px 20px;
   align-items: start;
 }
 
@@ -146,7 +148,6 @@ main {
     grid-template-columns: 1fr;
   }
 
-  /* Reorder: board first, intel second, strategy last */
   main section:nth-child(1) { order: 3; }
   main section:nth-child(2) { order: 1; }
   main section:nth-child(3) { order: 2; }
@@ -173,18 +174,23 @@ main {
 
 .panel {
   background: var(--panel);
-  border: 1px solid var(--edge);
-  border-radius: 12px;
-  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 16px;
 }
 
 .panel h2 {
   margin: 0 0 12px;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
+  font-size: 12px;
+  text-transform: lowercase;
+  letter-spacing: 0.3px;
   color: var(--dim);
   font-weight: 600;
+}
+
+.panel h2::before {
+  content: '$ ';
+  color: var(--ink);
 }
 
 /* Strategy panel */
@@ -192,17 +198,18 @@ textarea {
   width: 100%;
   min-height: 140px;
   resize: vertical;
-  background: #0d1117;
+  background: var(--paper);
   color: var(--ink);
-  border: 1px solid var(--edge);
-  border-radius: 8px;
-  padding: 12px;
-  font: 13px/1.5 ui-monospace, Menlo, Monaco, 'Courier New', monospace;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 10px;
+  font: 12px/1.5 ui-monospace, 'JetBrains Mono', 'IBM Plex Mono', monospace;
 }
 
 textarea:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--border);
 }
 
 .nation-picker {
@@ -213,50 +220,53 @@ textarea:focus {
 
 .nation-btn {
   flex: 1;
-  padding: 10px 12px;
-  border: 2px solid var(--edge);
-  border-radius: 8px;
-  background: transparent;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--paper);
   color: var(--ink);
-  font: 600 13px 'Inter', system-ui;
+  font: 600 12px ui-monospace, monospace;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
+  text-transform: lowercase;
 }
 
 .nation-btn .color-swatch {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 0;
+  border: 1px solid var(--border);
 }
 
 .nation-btn:hover {
-  border-color: var(--accent);
+  background: var(--neutral-fill);
 }
 
 .nation-btn.selected {
-  border-color: var(--accent);
-  background: rgba(124, 92, 255, 0.1);
+  border-width: 2px;
+  background: var(--neutral-fill);
 }
 
 .start-btn {
   width: 100%;
   margin-top: 16px;
-  padding: 12px 16px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font: 600 14px 'Inter', system-ui;
+  padding: 10px 14px;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font: 600 13px ui-monospace, monospace;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.15s;
+  text-transform: lowercase;
 }
 
 .start-btn:hover:not(:disabled) {
-  background: #6d4cdd;
+  background: var(--dim);
 }
 
 .start-btn:disabled {
@@ -266,7 +276,7 @@ textarea:focus {
 
 .hint {
   color: var(--dim);
-  font-size: 12px;
+  font-size: 11px;
   margin-top: 10px;
   line-height: 1.5;
 }
@@ -279,58 +289,57 @@ textarea:focus {
 }
 
 .empty-state {
-  padding: 40px 32px;
+  padding: 32px 24px;
   text-align: center;
   color: var(--dim);
+  max-width: 600px;
 }
 
 .empty-state-hero {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 1.3;
-  color: var(--accent);
-  margin: 0 0 24px;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  line-height: 1.4;
+  color: var(--ink);
+  margin: 0 0 20px;
 }
 
 .empty-state h3 {
-  margin: 0 0 16px;
+  margin: 0 0 14px;
   color: var(--ink);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .empty-state ol {
   text-align: left;
-  max-width: 400px;
-  margin: 16px auto;
+  max-width: 480px;
+  margin: 14px auto;
   line-height: 1.6;
+  font-size: 13px;
 }
 
 .turnbar {
   margin: 10px 0;
   color: var(--dim);
-  font-size: 13px;
+  font-size: 12px;
   text-align: center;
-  min-height: 20px;
+  min-height: 18px;
 }
 
 .turn-progress {
   width: 100%;
   max-width: 400px;
-  height: 8px;
-  background: var(--edge);
-  border-radius: 4px;
+  height: 6px;
+  background: var(--neutral-fill);
+  border: 1px solid var(--border);
+  border-radius: 0;
   margin: 8px 0;
   overflow: hidden;
 }
 
 .turn-progress-bar {
   height: 100%;
-  background: var(--accent);
-  box-shadow: 0 0 8px rgba(124, 92, 255, 0.4);
+  background: var(--ink);
   transition: width 0.3s;
 }
 
@@ -343,82 +352,82 @@ textarea:focus {
 .cell {
   width: 70px;
   height: 70px;
-  border-radius: 10px;
-  background: var(--neutral);
+  border-radius: 0;
+  background: var(--neutral-fill);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 3px solid transparent;
-  transition: all 0.3s;
+  border: 2px solid transparent;
+  transition: all 0.2s;
   position: relative;
 }
 
 .cell.yours {
-  border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(124, 92, 255, 0.3);
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--border);
 }
 
 .cell.flash {
-  animation: flash 0.5s ease-out;
+  animation: flash 0.4s ease-out;
 }
 
 @keyframes flash {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.08); filter: brightness(1.4); }
+  50% { transform: scale(1.06); filter: brightness(1.3); }
 }
 
 .cell.nuke {
-  animation: nuke 0.8s ease-out;
+  animation: nuke 0.7s ease-out;
 }
 
 @keyframes nuke {
   0%, 100% { transform: scale(1); filter: brightness(1); }
-  25% { transform: scale(1.2); filter: brightness(3) saturate(0); }
-  50% { filter: brightness(0.2); }
+  25% { transform: scale(1.15); filter: brightness(2.5) saturate(0); }
+  50% { filter: brightness(0.3); }
 }
 
 .cell .troops {
   font-weight: 700;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
 }
 
 .cell .owner-label {
   font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  opacity: 0.75;
+  text-transform: lowercase;
+  letter-spacing: 0.3px;
+  opacity: 0.7;
   margin-top: 2px;
 }
 
-.cell.own-0 { background: #4a1416; color: var(--crimson); }
-.cell.own-1 { background: #0e2f57; color: var(--azure); }
-.cell.own-2 { background: #123d1c; color: var(--verdant); }
-.cell.own-3 { background: #4a3908; color: var(--amber); }
+.cell.own-0 { background: var(--crimson); color: var(--paper); }
+.cell.own-1 { background: var(--azure); color: var(--paper); }
+.cell.own-2 { background: var(--verdant); color: var(--paper); }
+.cell.own-3 { background: var(--amber); color: var(--paper); }
 
-/* Make neutral tiles recede visually */
 .cell:not([class*="own-"]) {
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 .legend {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   margin-top: 12px;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 0;
+  border: 1px solid var(--border);
 }
 
 /* Nations sidebar */
@@ -429,11 +438,11 @@ textarea:focus {
 }
 
 .nation-card {
-  padding: 12px;
-  border: 1px solid var(--edge);
-  border-radius: 8px;
-  background: #0d1117;
-  transition: all 0.2s;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--paper);
+  transition: all 0.15s;
 }
 
 .nation-card.dead {
@@ -441,8 +450,8 @@ textarea:focus {
 }
 
 .nation-card.yours {
-  border-color: var(--accent);
-  background: rgba(124, 92, 255, 0.05);
+  border-width: 2px;
+  background: var(--neutral-fill);
 }
 
 .nation-header {
@@ -453,16 +462,18 @@ textarea:focus {
 }
 
 .nation-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 0;
   flex-shrink: 0;
+  border: 1px solid var(--border);
 }
 
 .nation-name {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   flex-grow: 1;
+  text-transform: lowercase;
 }
 
 .nation-name.dead {
@@ -470,17 +481,20 @@ textarea:focus {
 }
 
 .nation-you {
-  color: var(--accent);
-  font-size: 11px;
+  color: var(--ink);
+  font-size: 10px;
   font-weight: 600;
-  text-transform: uppercase;
+  text-transform: lowercase;
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 2px;
 }
 
 .nation-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  font-size: 12px;
+  font-size: 11px;
   margin-bottom: 8px;
 }
 
@@ -492,8 +506,7 @@ textarea:focus {
 .nation-stat-label {
   color: var(--dim);
   font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  text-transform: lowercase;
 }
 
 .nation-stat-value {
@@ -510,9 +523,10 @@ textarea:focus {
 
 .ally-chip {
   padding: 2px 8px;
-  background: var(--edge);
-  border-radius: 999px;
-  font-size: 11px;
+  background: var(--neutral-fill);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 10px;
   color: var(--dim);
 }
 
@@ -520,10 +534,11 @@ textarea:focus {
 .event-feed {
   height: 280px;
   overflow-y: auto;
-  background: #0d1117;
-  border: 1px solid var(--edge);
-  border-radius: 8px;
-  padding: 12px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 10px;
+  font-size: 12px;
 }
 
 .event-feed::-webkit-scrollbar {
@@ -535,26 +550,26 @@ textarea:focus {
 }
 
 .event-feed::-webkit-scrollbar-thumb {
-  background: var(--edge);
-  border-radius: 4px;
+  background: var(--border);
+  border-radius: 0;
 }
 
 .event {
-  padding: 8px 10px;
-  margin-bottom: 6px;
-  border-left: 3px solid var(--edge);
-  font-size: 13px;
-  line-height: 1.5;
-  transition: all 0.2s;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  border-left: 2px solid var(--border);
+  font-size: 12px;
+  line-height: 1.4;
+  transition: all 0.15s;
 }
 
 .event:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--neutral-fill);
 }
 
 .event-icon {
   display: inline-block;
-  width: 20px;
+  width: 18px;
   text-align: center;
   margin-right: 6px;
 }
@@ -566,42 +581,42 @@ textarea:focus {
   margin-right: 8px;
 }
 
-.event.expand { border-left-color: var(--success); opacity: 0.7; }
+.event.expand { border-left-color: var(--ok); opacity: 0.7; }
 .event.attack { border-left-color: var(--error); }
 .event.alliance_request { border-left-color: var(--azure); }
 .event.betray {
-  border-left-color: var(--warning);
-  border-left-width: 4px;
+  border-left-color: var(--degraded);
+  border-left-width: 3px;
   background: rgba(210, 153, 34, 0.08);
 }
 .event.nuke {
-  border-left-color: #ff6b9d;
-  border-left-width: 4px;
-  background: rgba(255, 107, 157, 0.1);
+  border-left-color: var(--error);
+  border-left-width: 3px;
+  background: rgba(229, 72, 77, 0.1);
   font-weight: 600;
 }
 .event.build { border-left-color: var(--dim); opacity: 0.7; }
 .event.hold { opacity: 0.6; }
 .event.elimination {
   border-left-color: var(--error);
-  border-left-width: 4px;
+  border-left-width: 3px;
   background: rgba(229, 72, 77, 0.12);
   font-weight: 600;
-  padding: 12px;
+  padding: 10px;
 }
 
-.event-nation-0 { color: var(--crimson); }
-.event-nation-1 { color: var(--azure); }
-.event-nation-2 { color: var(--verdant); }
-.event-nation-3 { color: var(--amber); }
+.event-nation-0 { color: var(--crimson-text); }
+.event-nation-1 { color: var(--azure-text); }
+.event-nation-2 { color: var(--verdant-text); }
+.event-nation-3 { color: var(--amber-text); }
 
 /* Plan cards */
 .plan-card {
-  padding: 12px;
-  background: #0d1117;
-  border: 1px solid var(--edge);
-  border-radius: 8px;
-  font-size: 13px;
+  padding: 10px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 12px;
   margin-bottom: 10px;
 }
 
@@ -613,22 +628,22 @@ textarea:focus {
 }
 
 .plan-source {
-  font-size: 11px;
+  font-size: 10px;
   padding: 3px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--edge);
+  border-radius: 2px;
+  border: 1px solid var(--border);
 }
 
 .plan-source.llm {
-  color: var(--success);
-  border-color: #1f6f37;
+  color: var(--ok);
+  border-color: var(--ok);
   background: rgba(63, 185, 80, 0.08);
   font-weight: 600;
 }
 
 .plan-source.fallback {
-  color: var(--warning);
-  border-color: #7a5b13;
+  color: var(--degraded);
+  border-color: var(--degraded);
   background: rgba(210, 153, 34, 0.08);
   font-weight: 600;
 }
@@ -639,7 +654,7 @@ textarea:focus {
 }
 
 .plan-field {
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 
 .plan-field strong {
@@ -649,131 +664,211 @@ textarea:focus {
 /* Result card */
 .result-card {
   margin-top: 16px;
-  padding: 16px;
-  background: linear-gradient(135deg, rgba(63, 185, 80, 0.1) 0%, rgba(124, 92, 255, 0.1) 100%);
-  border: 1px solid var(--verdant);
-  border-radius: 12px;
+  padding: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
 }
 
 .result-winner {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   text-align: center;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
 }
 
 .result-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   text-align: center;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .result-stat-value {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--ink);
 }
 
 .result-stat-label {
   color: var(--dim);
-  font-size: 11px;
-  text-transform: uppercase;
+  font-size: 10px;
+  text-transform: lowercase;
 }
 
 .signed-result {
-  padding: 12px;
-  background: #0d1117;
-  border: 1px solid var(--edge);
-  border-radius: 8px;
-  margin-top: 12px;
+  padding: 10px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  margin-top: 10px;
 }
 
 .signed-result h4 {
-  margin: 0 0 10px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  margin: 0 0 8px;
+  font-size: 11px;
+  text-transform: lowercase;
+  letter-spacing: 0.3px;
   color: var(--dim);
 }
 
 .tuple-field {
-  font-family: ui-monospace, Menlo, Monaco, monospace;
-  font-size: 12px;
-  margin-bottom: 6px;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  margin-bottom: 5px;
   word-break: break-all;
 }
 
 .signature {
-  font-family: ui-monospace, Menlo, Monaco, monospace;
-  font-size: 11px;
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
   word-break: break-all;
   padding: 8px;
-  background: var(--bg);
-  border-radius: 4px;
+  background: var(--neutral-fill);
+  border: 1px solid var(--border);
+  border-radius: 2px;
   margin: 8px 0;
 }
 
+.attestation-block {
+  padding: 10px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  margin-top: 10px;
+}
+
+.attestation-block h4 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  text-transform: lowercase;
+  letter-spacing: 0.3px;
+  color: var(--dim);
+}
+
+.attestation-field {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  margin-bottom: 5px;
+  word-break: break-all;
+}
+
+.jwt-container {
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  word-break: break-all;
+  padding: 8px;
+  background: var(--neutral-fill);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  margin: 6px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.jwt-text {
+  flex-grow: 1;
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copy-btn-inline {
+  padding: 4px 8px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--ink);
+  font-size: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.copy-btn-inline:hover {
+  background: var(--neutral-fill);
+}
+
+.copy-btn-inline.copied {
+  background: var(--ok);
+  color: var(--paper);
+}
+
+.attestation-unavailable {
+  color: var(--degraded);
+  font-style: italic;
+  font-size: 11px;
+}
+
 .verify-btn {
-  padding: 8px 14px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font: 600 12px 'Inter', system-ui;
+  padding: 8px 12px;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font: 600 11px ui-monospace, monospace;
   cursor: pointer;
   margin-top: 8px;
+  text-transform: lowercase;
+}
+
+.verify-btn:hover {
+  background: var(--dim);
 }
 
 .verify-result {
   margin-top: 10px;
   padding: 10px;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 2px;
+  font-size: 12px;
+  border: 1px solid var(--border);
 }
 
 .verify-result.match {
-  background: rgba(63, 185, 80, 0.15);
-  border: 1px solid var(--success);
-  color: var(--success);
+  background: rgba(63, 185, 80, 0.1);
+  border-color: var(--ok);
+  color: var(--ok);
 }
 
 .verify-result.mismatch {
-  background: rgba(229, 72, 77, 0.15);
-  border: 1px solid var(--error);
+  background: rgba(229, 72, 77, 0.1);
+  border-color: var(--error);
   color: var(--error);
 }
 
 .unsigned-note {
   color: var(--dim);
-  font-size: 12px;
+  font-size: 11px;
   font-style: italic;
   margin-top: 8px;
 }
 
 .replay-note {
-  margin-top: 12px;
+  margin-top: 10px;
   padding: 10px;
-  background: rgba(124, 92, 255, 0.08);
-  border-radius: 6px;
-  font-size: 12px;
+  background: var(--neutral-fill);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 11px;
   color: var(--dim);
 }
 
 /* Verify tab */
 .verify-container {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 24px 22px;
+  padding: 24px 20px;
 }
 
 .verify-headline {
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.5;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
   color: var(--ink);
   text-align: center;
   max-width: 800px;
@@ -783,94 +878,107 @@ textarea:focus {
 
 .verify-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: center;
   margin-bottom: 24px;
 }
 
 .refresh-btn, .probe-btn {
-  padding: 10px 16px;
-  background: var(--panel);
+  padding: 8px 14px;
+  background: var(--paper);
   color: var(--ink);
-  border: 1px solid var(--edge);
-  border-radius: 8px;
-  font: 600 13px 'Inter', system-ui;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font: 600 12px ui-monospace, monospace;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
+  text-transform: lowercase;
 }
 
 .refresh-btn:hover, .probe-btn:hover {
-  border-color: var(--accent);
-  background: rgba(124, 92, 255, 0.1);
+  background: var(--neutral-fill);
 }
 
 .proof-cards {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .proof-card {
   background: var(--panel);
-  border: 1px solid var(--edge);
-  border-radius: 12px;
-  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 16px;
 }
 
 .proof-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
 }
 
 .proof-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--ink);
+  text-transform: lowercase;
 }
 
 .proof-status {
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 2px;
+  font-size: 10px;
   font-weight: 600;
-  text-transform: uppercase;
+  text-transform: lowercase;
+  border: 1px solid var(--border);
 }
 
 .proof-status.ok {
-  background: rgba(63, 185, 80, 0.15);
-  color: var(--success);
+  background: rgba(63, 185, 80, 0.1);
+  color: var(--ok);
+  border-color: var(--ok);
+}
+
+.proof-status.verified {
+  background: rgba(63, 185, 80, 0.1);
+  color: var(--ok);
+  border-color: var(--ok);
 }
 
 .proof-status.degraded {
-  background: rgba(210, 153, 34, 0.15);
-  color: var(--warning);
+  background: rgba(210, 153, 34, 0.1);
+  color: var(--degraded);
+  border-color: var(--degraded);
 }
 
 .proof-status.unavailable {
-  background: rgba(139, 152, 169, 0.15);
+  background: rgba(90, 90, 90, 0.1);
   color: var(--dim);
+  border-color: var(--dim);
 }
 
 .proof-how {
   color: var(--dim);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.6;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .proof-artifact {
-  padding: 12px;
-  background: #0d1117;
-  border: 1px solid var(--edge);
-  border-radius: 8px;
-  font-family: ui-monospace, Menlo, Monaco, monospace;
-  font-size: 12px;
+  padding: 10px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
   word-break: break-all;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .artifact-text {
@@ -879,40 +987,42 @@ textarea:focus {
 
 .artifact-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
 .copy-btn, .link-btn {
-  padding: 6px 10px;
-  background: var(--edge);
-  border: none;
-  border-radius: 6px;
+  padding: 5px 10px;
+  background: var(--neutral-fill);
+  border: 1px solid var(--border);
+  border-radius: 2px;
   color: var(--ink);
-  font-size: 11px;
+  font-size: 10px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.15s;
+  text-transform: lowercase;
 }
 
 .copy-btn:hover, .link-btn:hover {
-  background: var(--accent);
+  background: var(--ink);
+  color: var(--paper);
 }
 
 .copy-btn.copied {
-  background: var(--success);
-  color: #fff;
+  background: var(--ok);
+  color: var(--paper);
 }
 
 .proof-details {
-  margin-top: 12px;
-  font-size: 13px;
+  margin-top: 10px;
+  font-size: 12px;
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--edge);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
 }
 
 .detail-row:last-child {
@@ -931,27 +1041,28 @@ textarea:focus {
 
 .model-chips {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: wrap;
   margin-top: 8px;
 }
 
 .model-chip {
-  padding: 4px 10px;
-  background: var(--edge);
-  border-radius: 999px;
-  font-size: 11px;
+  padding: 3px 8px;
+  background: var(--neutral-fill);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 10px;
   color: var(--ink);
 }
 
 .error-details {
-  margin-top: 12px;
-  padding: 10px;
-  background: rgba(229, 72, 77, 0.1);
-  border: 1px solid rgba(229, 72, 77, 0.3);
-  border-radius: 6px;
-  font-family: ui-monospace, Menlo, Monaco, monospace;
-  font-size: 11px;
+  margin-top: 10px;
+  padding: 8px;
+  background: rgba(229, 72, 77, 0.08);
+  border: 1px solid var(--error);
+  border-radius: 2px;
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
   color: var(--error);
   cursor: pointer;
 }
@@ -961,6 +1072,15 @@ textarea:focus {
   cursor: pointer;
   user-select: none;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .badge .dot {
+    animation: none;
+  }
+  .cell.flash, .cell.nuke {
+    animation: none;
+  }
+}
 </style>
 </head>
 <body>
@@ -968,26 +1088,26 @@ textarea:focus {
 <!-- Status bar -->
 <div class="statusbar">
   <div>
-    <span class="label">Status:</span>
+    <span class="label">status:</span>
     <span id="enclaveStatus" class="badge demo">
       <span class="dot"></span>
-      <span>Checking...</span>
+      <span>checking...</span>
     </span>
   </div>
   <div id="modelStatus" style="display:none;">
-    <span class="label">Model:</span>
+    <span class="label">model:</span>
     <span id="activeModel"></span>
   </div>
   <div id="seedStatus" style="display:none;">
-    <span class="label">Seed:</span>
+    <span class="label">seed:</span>
     <span id="matchSeed"></span>
   </div>
 </div>
 
 <!-- Tabs -->
 <div class="tabs">
-  <div class="tab active" data-tab="arena">Arena</div>
-  <div class="tab" data-tab="verify">Verify</div>
+  <div class="tab active" data-tab="arena">arena</div>
+  <div class="tab" data-tab="verify">verify</div>
 </div>
 
 <!-- Arena tab -->
@@ -995,50 +1115,50 @@ textarea:focus {
   <main>
     <!-- Strategy panel -->
     <section class="panel">
-      <h2>Your Strategy</h2>
-      <textarea id="strategy" spellcheck="false" placeholder="Write plain-English orders for your nation...">Expand into neutral land early, build economy once you hold a base, attack only rivals weaker than you, and honor alliances until betrayal clearly wins.</textarea>
+      <h2>your strategy</h2>
+      <textarea id="strategy" spellcheck="false" placeholder="write plain-english orders for your nation...">expand into neutral land early, build economy once you hold a base, attack only rivals weaker than you, and honor alliances until betrayal clearly wins.</textarea>
 
-      <h2 style="margin-top: 16px;">Play As</h2>
+      <h2 style="margin-top: 16px;">play as</h2>
       <div class="nation-picker">
         <button class="nation-btn selected" data-nation="Crimson">
           <span class="color-swatch" style="background: var(--crimson);"></span>
-          Crimson
+          crimson
         </button>
         <button class="nation-btn" data-nation="Azure">
           <span class="color-swatch" style="background: var(--azure);"></span>
-          Azure
+          azure
         </button>
         <button class="nation-btn" data-nation="Verdant">
           <span class="color-swatch" style="background: var(--verdant);"></span>
-          Verdant
+          verdant
         </button>
         <button class="nation-btn" data-nation="Amber">
           <span class="color-swatch" style="background: var(--amber);"></span>
-          Amber
+          amber
         </button>
       </div>
 
-      <button id="startBtn" class="start-btn">Start Match</button>
+      <button id="startBtn" class="start-btn">[ start match ]</button>
 
       <div class="hint">
-        Your nation is steered by an LLM reading these orders. Rivals follow built-in doctrines.
-        Same seed produces the same match — determinism is what makes results verifiable.
+        your nation is steered by an llm reading these orders. rivals follow built-in doctrines.
+        same seed produces the same match — determinism is what makes results verifiable.
       </div>
     </section>
 
     <!-- Board panel -->
     <section class="panel" id="boardWrap">
-      <h2 style="align-self: flex-start;">Board</h2>
+      <h2 style="align-self: flex-start;">board</h2>
 
       <div id="emptyState" class="empty-state">
         <div class="empty-state-hero">
-          The match and its result provably came from the enclave — and you can check.
+          the match and its result provably came from the enclave — and you can check.
         </div>
-        <h3>An AI-vs-AI strategy game you don't have to trust</h3>
+        <h3>an ai-vs-ai strategy game you don't have to trust</h3>
         <ol>
-          <li><strong>Write orders in plain English</strong> — your nation's standing strategy: when to expand, who to ally, when to betray, when to nuke.</li>
-          <li><strong>Four AI nations fight it out on the server</strong> — the game engine and the AI's reasoning run inside an EigenCompute TEE, not in your browser and not on a machine anyone can tamper with.</li>
-          <li><strong>The result comes back signed by the enclave</strong> — one signature check proves the outcome came from this exact code running in this exact enclave. Nobody — including the people who deployed it — could forge it. See the <em>Verify</em> tab for every claim and how to check it.</li>
+          <li><strong>write orders in plain english</strong> — your nation's standing strategy: when to expand, who to ally, when to betray, when to nuke.</li>
+          <li><strong>four ai nations fight it out on the server</strong> — the game engine and the ai's reasoning run inside an eigencompute tee, not in your browser and not on a machine anyone can tamper with.</li>
+          <li><strong>the result comes back signed by the enclave</strong> — one signature check proves the outcome came from this exact code running in this exact enclave. nobody — including the people who deployed it — could forge it. see the <em>verify</em> tab for every claim and how to check it.</li>
         </ol>
       </div>
 
@@ -1051,23 +1171,23 @@ textarea:focus {
         <div class="legend">
           <div class="legend-item">
             <div class="legend-color" style="background: var(--crimson);"></div>
-            <span>Crimson</span>
+            <span>crimson</span>
           </div>
           <div class="legend-item">
             <div class="legend-color" style="background: var(--azure);"></div>
-            <span>Azure</span>
+            <span>azure</span>
           </div>
           <div class="legend-item">
             <div class="legend-color" style="background: var(--verdant);"></div>
-            <span>Verdant</span>
+            <span>verdant</span>
           </div>
           <div class="legend-item">
             <div class="legend-color" style="background: var(--amber);"></div>
-            <span>Amber</span>
+            <span>amber</span>
           </div>
           <div class="legend-item">
-            <div class="legend-color" style="background: var(--neutral);"></div>
-            <span>Neutral</span>
+            <div class="legend-color" style="background: var(--neutral-fill);"></div>
+            <span>neutral</span>
           </div>
         </div>
       </div>
@@ -1077,13 +1197,13 @@ textarea:focus {
 
     <!-- Intel panel -->
     <section class="panel">
-      <h2>Nations</h2>
+      <h2>nations</h2>
       <div id="nationsList" class="nations-list"></div>
 
-      <h2 style="margin-top: 20px;">Your AI's Thinking</h2>
+      <h2 style="margin-top: 20px;">your ai's thinking</h2>
       <div id="planDisplay"></div>
 
-      <h2 style="margin-top: 20px;">Event Feed</h2>
+      <h2 style="margin-top: 20px;">event feed</h2>
       <div class="event-feed" id="eventFeed"></div>
     </section>
   </main>
@@ -1093,12 +1213,12 @@ textarea:focus {
 <div class="tab-content" id="verifyTab">
   <div class="verify-container">
     <div class="verify-headline" id="verifyHeadline">
-      ProxyWar Arena runs on EigenCompute — every claim below is checkable.
+      proxywar arena runs on eigencompute — every claim below is checkable.
     </div>
 
     <div class="verify-actions">
-      <button class="refresh-btn" id="refreshVerify">↻ Refresh Status</button>
-      <button class="probe-btn" id="probeModels">🔍 Probe Models</button>
+      <button class="refresh-btn" id="refreshVerify">↻ refresh status</button>
+      <button class="probe-btn" id="probeModels">🔍 probe models</button>
     </div>
 
     <div class="proof-cards" id="proofCards"></div>
@@ -1125,15 +1245,15 @@ const COPY = {
     hold: "🛡️",
     elimination: "🏳️"
   },
-  EMPTY_PLAN: "Waiting for first plan...",
+  EMPTY_PLAN: "waiting for first plan...",
 
   // status strip — the page's honest heartbeat
-  STATUS_TEE: "Running on EigenCompute (TEE)",
-  STATUS_LOCAL: "Local demo — not in an enclave",
+  STATUS_TEE: "running on eigencompute (tee)",
+  STATUS_LOCAL: "local demo — not in an enclave",
   NOW_ENGINE_TEE: "game engine executing in the enclave",
   NOW_ENGINE_LOCAL: "game engine running locally",
-  NOW_LLM_ON: (model) => "nations steered by " + (model || "an LLM") + " via the attested gateway",
-  NOW_LLM_FALLBACK: "nations on built-in doctrine (LLM gateway unavailable right now)",
+  NOW_LLM_ON: (model) => "nations steered by " + (model || "an llm") + " via the attested gateway",
+  NOW_LLM_FALLBACK: "nations on built-in doctrine (llm gateway unavailable right now)",
   NOW_SIGNED: "match results enclave-signed",
   NOW_UNSIGNED: "match results unsigned (no enclave key here)",
 };
@@ -1162,7 +1282,7 @@ function copyToClipboard(text, btnElement) {
   navigator.clipboard.writeText(text).then(() => {
     if (btnElement) {
       const originalText = btnElement.textContent;
-      btnElement.textContent = '✓ Copied';
+      btnElement.textContent = '✓ copied';
       btnElement.classList.add('copied');
       setTimeout(() => {
         btnElement.textContent = originalText;
@@ -1215,7 +1335,7 @@ async function startMatch() {
   state.nationTileCount = {};
 
   $('#startBtn').disabled = true;
-  $('#startBtn').textContent = 'Match Running...';
+  $('#startBtn').textContent = '[ match running... ]';
   state.matchRunning = true;
 
   const body = {
@@ -1274,7 +1394,7 @@ async function startMatch() {
 
     state.es.addEventListener('done', () => {
       $('#startBtn').disabled = false;
-      $('#startBtn').textContent = 'Start Match';
+      $('#startBtn').textContent = '[ start match ]';
       state.matchRunning = false;
       if (state.es) {
         state.es.close();
@@ -1285,7 +1405,7 @@ async function startMatch() {
   } catch (err) {
     console.error('Failed to start match:', err);
     $('#startBtn').disabled = false;
-    $('#startBtn').textContent = 'Start Match';
+    $('#startBtn').textContent = '[ start match ]';
     state.matchRunning = false;
   }
 }
@@ -1350,9 +1470,9 @@ function renderBoard(board) {
   $('#turnProgress').style.width = turnPct + '%';
 
   if (board.over) {
-    $('#turnbar').textContent = `Match Over — Winner: ${board.winner || 'none'} (Turn ${board.turn}/${board.maxTurns})`;
+    $('#turnbar').textContent = `match over — winner: ${board.winner || 'none'} (turn ${board.turn}/${board.maxTurns})`;
   } else {
-    $('#turnbar').textContent = `Turn ${board.turn}/${board.maxTurns} — ${board.current} to move`;
+    $('#turnbar').textContent = `turn ${board.turn}/${board.maxTurns} — ${board.current} to move`;
   }
 
   // Nations list
@@ -1368,26 +1488,26 @@ function renderNations(nations) {
       <div class="nation-card ${isDead ? 'dead' : ''} ${isYours ? 'yours' : ''}">
         <div class="nation-header">
           <div class="nation-dot" style="background: ${COPY.NATION_COLORS[n.id]};"></div>
-          <div class="nation-name ${isDead ? 'dead' : ''}">${n.name}</div>
-          ${isYours ? '<div class="nation-you">You</div>' : ''}
+          <div class="nation-name ${isDead ? 'dead' : ''}">${n.name.toLowerCase()}</div>
+          ${isYours ? '<div class="nation-you">you</div>' : ''}
         </div>
         <div class="nation-stats">
           <div class="nation-stat">
-            <div class="nation-stat-label">Tiles</div>
+            <div class="nation-stat-label">tiles</div>
             <div class="nation-stat-value">${n.tiles}</div>
           </div>
           <div class="nation-stat">
-            <div class="nation-stat-label">Troops</div>
+            <div class="nation-stat-label">troops</div>
             <div class="nation-stat-value">${n.troops}</div>
           </div>
           <div class="nation-stat">
-            <div class="nation-stat-label">Gold</div>
+            <div class="nation-stat-label">gold</div>
             <div class="nation-stat-value">${n.gold}</div>
           </div>
         </div>
         ${n.allies.length > 0 ? `
           <div class="nation-allies">
-            ${n.allies.map(a => `<div class="ally-chip">🤝 ${a}</div>`).join('')}
+            ${n.allies.map(a => `<div class="ally-chip">🤝 ${a.toLowerCase()}</div>`).join('')}
           </div>
         ` : ''}
       </div>
@@ -1400,19 +1520,19 @@ function renderNations(nations) {
 function renderYourPlan(planData) {
   const { plan, source, degraded } = planData;
   const sourceClass = source.startsWith('llm:') ? 'llm' : 'fallback';
-  const sourceLabel = source.startsWith('llm:') ? `Claude via attested gateway (${plan.model || 'unknown'})` : 'Doctrine fallback (gateway unreachable)';
+  const sourceLabel = source.startsWith('llm:') ? `claude via attested gateway (${plan.model || 'unknown'})` : 'doctrine fallback (gateway unreachable)';
 
   const html = `
     <div class="plan-card">
       <div class="plan-header">
-        <div style="font-weight:600;">Latest Plan</div>
+        <div style="font-weight:600;">latest plan</div>
         <div class="plan-source ${sourceClass}">${sourceLabel}</div>
       </div>
       <div class="plan-content">
-        <div class="plan-field"><strong>Focus:</strong> ${plan.focus || '—'}</div>
-        <div class="plan-field"><strong>Target:</strong> ${plan.target || '—'}</div>
-        <div class="plan-field"><strong>Reason:</strong> ${plan.reason || '—'}</div>
-        ${plan.preferKinds && plan.preferKinds.length > 0 ? `<div class="plan-field"><strong>Prefer:</strong> ${plan.preferKinds.join(', ')}</div>` : ''}
+        <div class="plan-field"><strong>focus:</strong> ${plan.focus || '—'}</div>
+        <div class="plan-field"><strong>target:</strong> ${plan.target || '—'}</div>
+        <div class="plan-field"><strong>reason:</strong> ${plan.reason || '—'}</div>
+        ${plan.preferKinds && plan.preferKinds.length > 0 ? `<div class="plan-field"><strong>prefer:</strong> ${plan.preferKinds.join(', ')}</div>` : ''}
       </div>
     </div>
   `;
@@ -1429,17 +1549,17 @@ function addEvent(log) {
 
   // Friendlier messages
   if (kind === 'expand') {
-    message = `${nation} expanded — ${detail}`;
+    message = `${nation.toLowerCase()} expanded — ${detail}`;
   } else if (kind === 'attack') {
-    message = `${nation} attacked — ${detail}`;
+    message = `${nation.toLowerCase()} attacked — ${detail}`;
   } else if (kind === 'build') {
-    message = `${nation} built — ${detail}`;
+    message = `${nation.toLowerCase()} built — ${detail}`;
   } else if (kind === 'alliance_request') {
-    message = `${nation} — ${detail}`;
+    message = `${nation.toLowerCase()} — ${detail}`;
   } else if (kind === 'betray') {
-    message = `${nation} — ${detail}`;
+    message = `${nation.toLowerCase()} — ${detail}`;
   } else if (kind === 'nuke') {
-    message = `${nation} — ${detail}`;
+    message = `${nation.toLowerCase()} — ${detail}`;
     // Flash nuke animation on the board
     const match = detail.match(/tile (\d+)/);
     if (match) {
@@ -1451,13 +1571,13 @@ function addEvent(log) {
       }
     }
   } else if (kind === 'hold') {
-    message = `${nation} held position`;
+    message = `${nation.toLowerCase()} held position`;
   }
 
   const eventEl = document.createElement('div');
   eventEl.className = `event ${kind} event-nation-${nationIdx}`;
   eventEl.innerHTML = `
-    <span class="event-turn">T${turn}</span>
+    <span class="event-turn">t${turn}</span>
     <span class="event-icon">${icon}</span>
     <span>${message}</span>
   `;
@@ -1472,7 +1592,7 @@ function addEliminationEvent(nationName) {
   eventEl.className = 'event elimination';
   eventEl.innerHTML = `
     <span class="event-icon">${COPY.EVENT_ICONS.elimination}</span>
-    <span><strong>${nationName} has been eliminated!</strong></span>
+    <span><strong>${nationName.toLowerCase()} has been eliminated!</strong></span>
   `;
   const feed = $('#eventFeed');
   feed.appendChild(eventEl);
@@ -1481,25 +1601,25 @@ function addEliminationEvent(nationName) {
 
 // --- Result rendering ---
 function renderResult(result) {
-  const { tuple, signature, address, unavailable, canonicalMessage, verify } = result;
+  const { tuple, signature, address, unavailable, canonicalMessage, verify, attestation } = result;
 
   let html = `
     <div class="result-card">
       <div class="result-winner">
-        ${tuple.winner ? `🏆 ${tuple.winner} Wins!` : 'Match Complete'}
+        ${tuple.winner ? `🏆 ${tuple.winner.toLowerCase()} wins!` : 'match complete'}
       </div>
       <div class="result-stats">
         <div>
           <div class="result-stat-value">${tuple.turns}</div>
-          <div class="result-stat-label">Turns</div>
+          <div class="result-stat-label">turns</div>
         </div>
         <div>
           <div class="result-stat-value">${tuple.decisions}</div>
-          <div class="result-stat-label">Decisions</div>
+          <div class="result-stat-label">decisions</div>
         </div>
         <div>
           <div class="result-stat-value">${tuple.seed}</div>
-          <div class="result-stat-label">Seed</div>
+          <div class="result-stat-label">seed</div>
         </div>
       </div>
   `;
@@ -1507,24 +1627,24 @@ function renderResult(result) {
   if (unavailable) {
     html += `
       <div class="unsigned-note">
-        Unsigned — local mode. Deploy to EigenCompute for enclave-signed results.
+        unsigned — local mode. deploy to eigencompute for enclave-signed results.
       </div>
     `;
   } else if (signature) {
     html += `
       <div class="signed-result">
-        <h4>Enclave-Signed Result</h4>
-        <div class="tuple-field"><strong>App:</strong> ${tuple.app}</div>
-        <div class="tuple-field"><strong>Commit:</strong> ${tuple.commit}</div>
-        <div class="tuple-field"><strong>Seed:</strong> ${tuple.seed}</div>
-        <div class="tuple-field"><strong>Winner:</strong> ${tuple.winner || 'none'}</div>
-        <div class="tuple-field"><strong>Decisions Hash:</strong> ${tuple.decisionsHash}</div>
+        <h4>enclave-signed result</h4>
+        <div class="tuple-field"><strong>app:</strong> ${tuple.app}</div>
+        <div class="tuple-field"><strong>commit:</strong> ${tuple.commit}</div>
+        <div class="tuple-field"><strong>seed:</strong> ${tuple.seed}</div>
+        <div class="tuple-field"><strong>winner:</strong> ${tuple.winner || 'none'}</div>
+        <div class="tuple-field"><strong>decisions hash:</strong> ${tuple.decisionsHash}</div>
 
-        <h4 style="margin-top:12px;">Signature</h4>
+        <h4 style="margin-top:10px;">signature</h4>
         <div class="signature">${signature}</div>
 
         <button class="verify-btn" onclick="verifySignature('${canonicalMessage}', '${signature}')">
-          Verify Signature
+          verify signature
         </button>
 
         <div id="verifyResult"></div>
@@ -1532,9 +1652,36 @@ function renderResult(result) {
     `;
   }
 
+  // Attestation block
+  if (attestation) {
+    if (attestation.unavailable) {
+      html += `
+        <div class="attestation-block">
+          <h4>runtime attestation</h4>
+          <div class="attestation-unavailable">${attestation.note}</div>
+          <div class="attestation-field"><strong>sha512:</strong> ${attestation.sha512}</div>
+        </div>
+      `;
+    } else {
+      html += `
+        <div class="attestation-block">
+          <h4>runtime attestation</h4>
+          <div class="attestation-field"><strong>audience:</strong> ${attestation.audience}</div>
+          <div class="attestation-field"><strong>sha512:</strong> ${attestation.sha512}</div>
+          <h4 style="margin-top:8px;">jwt</h4>
+          <div class="jwt-container">
+            <div class="jwt-text">${attestation.jwt.slice(0, 80)}...</div>
+            <button class="copy-btn-inline" onclick="copyToClipboard('${attestation.jwt}', this)">copy</button>
+          </div>
+          <div class="hint" style="margin-top:8px;">${attestation.how}</div>
+        </div>
+      `;
+    }
+  }
+
   html += `
     <div class="replay-note">
-      <strong>Replay this exact match:</strong> Use seed ${tuple.seed} with the same strategy — determinism guarantees the same outcome.
+      <strong>replay this exact match:</strong> use seed ${tuple.seed} with the same strategy — determinism guarantees the same outcome.
     </div>
   </div>
   `;
@@ -1553,21 +1700,21 @@ async function verifySignature(message, signature) {
 
     const resultDiv = $('#verifyResult');
     if (data.error) {
-      resultDiv.innerHTML = `<div class="verify-result mismatch">❌ Verification failed: ${data.error}</div>`;
+      resultDiv.innerHTML = `<div class="verify-result mismatch">❌ verification failed: ${data.error}</div>`;
     } else if (data.recovered) {
       const expected = state.verifyData?.resultSigning?.enclaveAddress || 'unknown';
       const match = data.recovered.toLowerCase() === expected.toLowerCase();
       resultDiv.innerHTML = `
         <div class="verify-result ${match ? 'match' : 'mismatch'}">
-          ${match ? '✓' : '✗'} Recovered: <code>${data.recovered}</code><br>
-          Expected: <code>${expected}</code><br>
-          <strong>${match ? 'SIGNATURE VALID ✓' : 'MISMATCH ✗'}</strong>
+          ${match ? '✓' : '✗'} recovered: <code>${data.recovered}</code><br>
+          expected: <code>${expected}</code><br>
+          <strong>${match ? 'signature valid ✓' : 'mismatch ✗'}</strong>
         </div>
       `;
     }
   } catch (err) {
     console.error('Verify failed:', err);
-    $('#verifyResult').innerHTML = `<div class="verify-result mismatch">❌ Network error</div>`;
+    $('#verifyResult').innerHTML = `<div class="verify-result mismatch">❌ network error</div>`;
   }
 }
 
@@ -1580,54 +1727,65 @@ async function loadVerifyData() {
     renderVerifyData(data);
   } catch (err) {
     console.error('Failed to load verify data:', err);
-    $('#verifyHeadline').textContent = 'Failed to load verification status';
+    $('#verifyHeadline').textContent = 'failed to load verification status';
   }
 }
 
 function renderVerifyData(data) {
-  $('#verifyHeadline').textContent = data.headline;
+  $('#verifyHeadline').textContent = data.headline.toLowerCase();
 
   const cards = [
     {
-      title: '1. Enclave Execution',
+      title: '1. enclave execution',
       status: data.enclave.runningInEnclave ? 'ok' : 'unavailable',
       how: data.enclave.how,
       artifact: data.enclave.appId,
       link: data.enclave.dashboard,
-      linkText: 'View on EigenCloud Verify Dashboard'
+      linkText: 'view on eigencloud verify dashboard'
     },
     {
-      title: '2. Verifiable Build',
+      title: '2. verifiable build',
       status: data.build.commit !== 'unknown' ? 'ok' : 'unavailable',
       how: data.build.how,
       artifact: `${data.build.repo}/tree/${data.build.commit}`,
       link: data.build.commitUrl,
-      linkText: 'View commit on GitHub'
+      linkText: 'view commit on github'
     },
     {
-      title: '3. Model Access',
+      title: '3. model access',
       status: data.modelAccess.lastError ? 'degraded' : (data.modelAccess.activeModel ? 'ok' : 'unavailable'),
       how: data.modelAccess.how,
       details: [
-        { label: 'Gateway', value: data.modelAccess.gateway },
-        { label: 'Attestation JWT', value: data.modelAccess.attestationJwt ? 'Present' : 'Not available' },
-        { label: 'Active Model', value: data.modelAccess.activeModel || 'None' },
-        { label: 'Calls / Failures', value: `${data.modelAccess.calls} / ${data.modelAccess.failures}` },
-        { label: 'Last Success', value: data.modelAccess.lastSuccessAt || 'Never' }
+        { label: 'gateway', value: data.modelAccess.gateway },
+        { label: 'attestation jwt', value: data.modelAccess.attestationJwt ? 'present' : 'not available' },
+        { label: 'active model', value: data.modelAccess.activeModel || 'none' },
+        { label: 'calls / failures', value: `${data.modelAccess.calls} / ${data.modelAccess.failures}` },
+        { label: 'last success', value: data.modelAccess.lastSuccessAt || 'never' }
       ],
       availableModels: data.modelAccess.availableModels,
       error: data.modelAccess.lastError
     },
     {
-      title: '4. Result Signing',
+      title: '4. result signing',
       status: data.resultSigning.available ? 'ok' : 'unavailable',
       how: data.resultSigning.how,
       artifact: data.resultSigning.enclaveAddress,
       link: data.enclave.dashboard
     },
     {
-      title: '5. Determinism',
-      status: 'ok',
+      title: '5. runtime attestation',
+      status: data.runtimeAttestation.configured ? (data.runtimeAttestation.lastError ? 'degraded' : 'verified') : 'unavailable',
+      how: data.runtimeAttestation.how,
+      details: data.runtimeAttestation.configured ? [
+        { label: 'audience', value: data.runtimeAttestation.audience || 'none' },
+        { label: 'attestations', value: data.runtimeAttestation.attestations },
+        { label: 'last attested', value: data.runtimeAttestation.lastAttestAt || 'never' }
+      ] : null,
+      error: data.runtimeAttestation.lastError
+    },
+    {
+      title: '6. determinism',
+      status: 'verified',
       how: data.determinism.how
     }
   ];
@@ -1647,8 +1805,8 @@ function renderVerifyData(data) {
         <div class="proof-artifact">
           <div class="artifact-text">${card.artifact}</div>
           <div class="artifact-actions">
-            <button class="copy-btn" onclick="copyToClipboard('${card.artifact}', this)">Copy</button>
-            ${card.link ? `<button class="link-btn" onclick="window.open('${card.link}', '_blank')">Open</button>` : ''}
+            <button class="copy-btn" onclick="copyToClipboard('${card.artifact}', this)">copy</button>
+            ${card.link ? `<button class="link-btn" onclick="window.open('${card.link}', '_blank')">open</button>` : ''}
           </div>
         </div>
       `;
@@ -1678,7 +1836,7 @@ function renderVerifyData(data) {
     if (card.error) {
       cardHtml += `
         <details class="error-details">
-          <summary>Last Error</summary>
+          <summary>last error</summary>
           <div style="margin-top:8px;">${card.error}</div>
         </details>
       `;
@@ -1695,7 +1853,7 @@ $('#refreshVerify').addEventListener('click', loadVerifyData);
 
 $('#probeModels').addEventListener('click', async () => {
   $('#probeModels').disabled = true;
-  $('#probeModels').textContent = 'Probing...';
+  $('#probeModels').textContent = 'probing...';
   try {
     await fetch('/api/verify/probe-models', { method: 'POST' });
     await loadVerifyData();
@@ -1703,7 +1861,7 @@ $('#probeModels').addEventListener('click', async () => {
     console.error('Probe failed:', err);
   }
   $('#probeModels').disabled = false;
-  $('#probeModels').textContent = '🔍 Probe Models';
+  $('#probeModels').textContent = '🔍 probe models';
 });
 
 // --- Initial load ---
@@ -1714,26 +1872,26 @@ async function updateEnclaveStatus(data) {
   const now = data.now || {};
   if (now.engineInTee) {
     badge.className = 'badge live';
-    badge.innerHTML = '<span class="dot"></span><span>' + COPY.STATUS_TEE + '</span>';
+    badge.innerHTML = '<span class="dot"></span><span>' + COPY.STATUS_TEE.toLowerCase() + '</span>';
   } else {
     badge.className = 'badge demo';
-    badge.innerHTML = '<span class="dot"></span><span>' + COPY.STATUS_LOCAL + '</span>';
+    badge.innerHTML = '<span class="dot"></span><span>' + COPY.STATUS_LOCAL.toLowerCase() + '</span>';
   }
   let nowBar = $('#nowBar');
   if (!nowBar) {
     nowBar = document.createElement('div');
     nowBar.id = 'nowBar';
-    nowBar.style.cssText = 'flex-basis:100%;font-size:12px;color:var(--dim);display:flex;gap:14px;flex-wrap:wrap;';
+    nowBar.style.cssText = 'flex-basis:100%;font-size:11px;color:var(--dim);display:flex;gap:14px;flex-wrap:wrap;';
     document.querySelector('.statusbar').appendChild(nowBar);
   }
   const chip = (ok, text) =>
     '<span style="display:inline-flex;align-items:center;gap:5px;">' +
-    '<span style="width:7px;height:7px;border-radius:50%;background:' + (ok ? 'var(--verdant)' : 'var(--amber)') + '"></span>' +
+    '<span style="width:6px;height:6px;border-radius:0;background:' + (ok ? 'var(--ok)' : 'var(--degraded)') + '"></span>' +
     text + '</span>';
   nowBar.innerHTML =
-    chip(now.engineInTee, now.engineInTee ? COPY.NOW_ENGINE_TEE : COPY.NOW_ENGINE_LOCAL) +
-    chip(now.llmSteering, now.llmSteering ? COPY.NOW_LLM_ON(data.modelAccess && data.modelAccess.activeModel) : COPY.NOW_LLM_FALLBACK) +
-    chip(now.resultsSigned, now.resultsSigned ? COPY.NOW_SIGNED : COPY.NOW_UNSIGNED);
+    chip(now.engineInTee, now.engineInTee ? COPY.NOW_ENGINE_TEE.toLowerCase() : COPY.NOW_ENGINE_LOCAL.toLowerCase()) +
+    chip(now.llmSteering, now.llmSteering ? COPY.NOW_LLM_ON(data.modelAccess && data.modelAccess.activeModel).toLowerCase() : COPY.NOW_LLM_FALLBACK.toLowerCase()) +
+    chip(now.resultsSigned, now.resultsSigned ? COPY.NOW_SIGNED.toLowerCase() : COPY.NOW_UNSIGNED.toLowerCase());
 }
 
 async function init() {

@@ -22,6 +22,7 @@ import {
 import { rulePlan, refreshPlan, DEFAULT_PLANS } from "./brains.mjs";
 import { gatewayStatus, probeModels } from "./gateway.mjs";
 import { signingAvailable, enclaveAddress, signResult, hashDecisions, verifySignature, canonicalize } from "./signer.mjs";
+import { attestPayload, attestStatus, sha512Of } from "./attest.mjs";
 
 const PORT = Number(process.env.APP_PORT || process.env.PORT || 3000);
 const PLAN_EVERY = Number(process.env.PLAN_EVERY || 4);
@@ -89,6 +90,12 @@ app.get("/api/verify", async (_req, res) => {
       how: signingAvailable()
         ? "Match results are signed with a key derived inside the enclave (path m/44'/60'/0'/0/0). That address is listed on the app's verify dashboard — if the signature recovers to it, the result came from this enclave and nowhere else."
         : "No enclave key present (local mode) — results are unsigned here.",
+    },
+    runtimeAttestation: {
+      ...attestStatus(),
+      how: attestStatus().configured
+        ? "At match end the enclave requests a fresh per-action attestation whose extra-data is the SHA-512 of the result. The KMS verifies the hardware quote before minting the JWT, binding (this result ↔ this attested instance ↔ this moment). Independent of the wallet key."
+        : "No KMS attestation config (local mode) — per-action attestation unavailable here.",
     },
     determinism: {
       how: "The engine is a pure function of (seed, decision log). Re-running the public engine code with the signed seed and decisions reproduces the exact final board — so a signed tuple is a checkable claim, not a trust-me claim.",
@@ -195,9 +202,23 @@ async function runMatch(m) {
     finalTiles: Object.fromEntries(view.nations.map((n) => [n.name, n.tiles])),
   };
   const signed = await signResult(tuple);
+  // Second, independent proof: a fresh per-action TEE attestation whose
+  // extra-data is the SHA-512 of the same canonical message. Wallet key
+  // proves "this app's key signed it"; this proves "an attested enclave
+  // instance committed to it" — hardware-rooted, no wallet tooling needed.
+  const attestation = await attestPayload(signed.message);
   broadcast(m, "result", {
     ...signed,
     canonicalMessage: signed.message,
+    attestation: attestation.unavailable
+      ? { unavailable: true, note: attestation.note, sha512: attestation.sha512Hex }
+      : {
+          jwt: attestation.jwt,
+          audience: attestation.audience,
+          sha512: attestation.sha512Hex,
+          matchedClaims: attestation.matchedClaims,
+          how: "Decode the JWT (KMS-signed): its extra-data claim is the SHA-512 of canonicalMessage. Recompute the hash to check the enclave committed to exactly this result.",
+        },
     verify: {
       dashboard: DASHBOARD,
       expectAddress: enclaveAddress(),
