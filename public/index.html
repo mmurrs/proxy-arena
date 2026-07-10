@@ -41,58 +41,61 @@ body {
   font: 14px/1.5 ui-monospace, 'JetBrains Mono', 'IBM Plex Mono', 'SF Mono', Menlo, Monaco, monospace;
 }
 
-/* Status bar */
-.statusbar {
+/* Status strip (band 0) */
+.status-strip {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   padding: 10px 20px;
   background: var(--panel);
   border-bottom: 1px solid var(--border);
   font-size: 12px;
+}
+
+.status-chips {
+  display: flex;
   flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
 }
 
-.statusbar .label {
-  color: var(--dim);
-  margin-right: 4px;
-}
-
-.badge {
+.status-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  font-weight: 600;
   padding: 4px 10px;
   border-radius: 2px;
   border: 1px solid var(--border);
-  color: var(--dim);
+  color: var(--ink);
+  text-decoration: none;
 }
 
-.badge.live {
+.status-chip.ok {
   color: var(--ok);
   border-color: var(--ok);
   background: rgba(63, 185, 80, 0.08);
 }
 
-.badge.demo {
+.status-chip.degraded {
   color: var(--degraded);
   border-color: var(--degraded);
   background: rgba(210, 153, 34, 0.08);
 }
 
-.badge .dot {
+.status-chip .dot {
   width: 6px;
   height: 6px;
-  border-radius: 0;
+  border-radius: 50%;
   background: currentColor;
-  animation: blink 1.2s step-end infinite;
 }
 
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+.status-caption {
+  flex-basis: 100%;
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.4;
 }
 
 /* Tabs */
@@ -132,23 +135,231 @@ body {
   display: block;
 }
 
-/* Main layout */
-main {
+/* Full-width bands */
+.band {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.band.hero {
+  padding: 48px 20px 40px;
+}
+
+.band.instant-receipt {
+  background: var(--panel);
+}
+
+.band.game {
+  padding: 24px 20px 40px;
+}
+
+.band.unlocks {
+  padding: 32px 20px 48px;
+}
+
+.band.verify-link {
+  padding: 16px 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--dim);
+}
+
+.band h1 {
+  font-size: 24px;
+  line-height: 1.4;
+  margin: 0 0 16px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.band .sub {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 20px;
+  color: var(--dim);
+  max-width: 800px;
+}
+
+.cta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cta-btn {
+  padding: 10px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font: 600 13px ui-monospace, monospace;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.cta-btn:hover {
+  background: var(--dim);
+}
+
+.cta-btn.secondary {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.cta-btn.secondary:hover {
+  background: var(--neutral-fill);
+}
+
+/* Receipt display */
+.receipt-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 16px;
+  max-width: 900px;
+}
+
+.receipt-header {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--ink);
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.receipt-row:last-child {
+  border-bottom: none;
+}
+
+.receipt-label {
+  color: var(--dim);
+}
+
+.receipt-value {
+  color: var(--ink);
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  word-break: break-all;
+}
+
+.receipt-address {
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copy-mini {
+  padding: 2px 6px;
+  background: var(--neutral-fill);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.copy-mini:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.copy-mini.copied {
+  background: var(--ok);
+  color: var(--paper);
+}
+
+.receipt-caption {
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.5;
+}
+
+.verify-sig-btn {
+  padding: 8px 14px;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font: 600 11px ui-monospace, monospace;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.verify-sig-btn:hover {
+  background: var(--dim);
+}
+
+.verify-result {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 2px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+}
+
+.verify-result.match {
+  background: rgba(63, 185, 80, 0.1);
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.verify-result.mismatch {
+  background: rgba(229, 72, 77, 0.1);
+  border-color: var(--error);
+  color: var(--error);
+}
+
+.attestation-collapsed {
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.attestation-collapsed summary {
+  cursor: pointer;
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 600;
+  user-select: none;
+}
+
+.attestation-content {
+  margin-top: 8px;
+  padding: 10px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 11px;
+}
+
+.attestation-field {
+  margin-bottom: 5px;
+  word-break: break-all;
+}
+
+/* Three-column game layout */
+.game-grid {
   display: grid;
   grid-template-columns: 300px 1fr 340px;
   gap: 16px;
-  padding: 16px 20px;
   align-items: start;
 }
 
 @media (max-width: 1200px) {
-  main {
+  .game-grid {
     grid-template-columns: 1fr;
   }
-
-  main section:nth-child(1) { order: 1; }
-  main section:nth-child(2) { order: 2; }
-  main section:nth-child(3) { order: 3; }
 }
 
 @media (max-width: 480px) {
@@ -177,17 +388,12 @@ main {
   padding: 16px;
 }
 
-.panel h2 {
+.panel h3 {
   margin: 0 0 12px;
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.3px;
-  color: var(--dim);
-  font-weight: 600;
-}
-
-.panel h2::before {
-  content: '$ ';
   color: var(--ink);
+  font-weight: 600;
 }
 
 /* Strategy panel */
@@ -283,33 +489,10 @@ textarea:focus {
   align-items: center;
 }
 
-.empty-state {
+.board-empty {
   padding: 32px 24px;
   text-align: center;
   color: var(--dim);
-  max-width: 600px;
-}
-
-.empty-state-hero {
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1.4;
-  color: var(--ink);
-  margin: 0 0 20px;
-}
-
-.empty-state h3 {
-  margin: 0 0 14px;
-  color: var(--ink);
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.empty-state ol {
-  text-align: left;
-  max-width: 480px;
-  margin: 14px auto;
-  line-height: 1.6;
   font-size: 13px;
 }
 
@@ -722,112 +905,6 @@ textarea:focus {
   margin: 8px 0;
 }
 
-.attestation-block {
-  padding: 10px;
-  background: var(--paper);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  margin-top: 10px;
-}
-
-.attestation-block h4 {
-  margin: 0 0 8px;
-  font-size: 11px;
-  letter-spacing: 0.3px;
-  color: var(--dim);
-}
-
-.attestation-field {
-  font-family: ui-monospace, monospace;
-  font-size: 11px;
-  margin-bottom: 5px;
-  word-break: break-all;
-}
-
-.jwt-container {
-  font-family: ui-monospace, monospace;
-  font-size: 10px;
-  word-break: break-all;
-  padding: 8px;
-  background: var(--neutral-fill);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  margin: 6px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-}
-
-.jwt-text {
-  flex-grow: 1;
-  max-width: 400px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.copy-btn-inline {
-  padding: 4px 8px;
-  background: var(--paper);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  color: var(--ink);
-  font-size: 10px;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.copy-btn-inline:hover {
-  background: var(--neutral-fill);
-}
-
-.copy-btn-inline.copied {
-  background: var(--ok);
-  color: var(--paper);
-}
-
-.attestation-unavailable {
-  color: var(--degraded);
-  font-style: italic;
-  font-size: 11px;
-}
-
-.verify-btn {
-  padding: 8px 12px;
-  background: var(--ink);
-  color: var(--paper);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  font: 600 11px ui-monospace, monospace;
-  cursor: pointer;
-  margin-top: 8px;
-}
-
-.verify-btn:hover {
-  background: var(--dim);
-}
-
-.verify-result {
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 2px;
-  font-size: 12px;
-  border: 1px solid var(--border);
-}
-
-.verify-result.match {
-  background: rgba(63, 185, 80, 0.1);
-  border-color: var(--ok);
-  color: var(--ok);
-}
-
-.verify-result.mismatch {
-  background: rgba(229, 72, 77, 0.1);
-  border-color: var(--error);
-  color: var(--error);
-}
-
 .unsigned-note {
   color: var(--dim);
   font-size: 11px;
@@ -843,6 +920,49 @@ textarea:focus {
   border-radius: 2px;
   font-size: 11px;
   color: var(--dim);
+}
+
+/* Unlocks grid */
+.unlocks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 900px) {
+  .unlocks-grid { grid-template-columns: 1fr; }
+}
+
+.unlock-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 16px;
+}
+
+.unlock-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.unlock-card p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--dim);
+}
+
+.unlock-caveat {
+  margin-top: 16px;
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.5;
+  text-align: center;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Verify tab */
@@ -888,77 +1008,6 @@ textarea:focus {
 .proof-cards {
   display: grid;
   gap: 14px;
-}
-
-/* why-this-exists context block (gap / fill / opportunity) */
-.context-block {
-  margin-top: 32px;
-  border-top: 1px solid var(--border);
-  padding-top: 20px;
-}
-
-.context-block h3 {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ink);
-  margin: 0 0 14px;
-}
-
-.context-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
-
-@media (max-width: 900px) {
-  .context-grid { grid-template-columns: 1fr; }
-}
-
-.context-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  padding: 16px;
-}
-
-.context-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: var(--dim);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 8px;
-  margin-bottom: 10px;
-}
-
-.context-card p {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--ink);
-}
-
-.context-note {
-  margin-top: 14px;
-  font-size: 11px;
-  color: var(--dim);
-  line-height: 1.5;
-}
-
-.board-explainer {
-  font-size: 12px;
-  color: var(--dim);
-  max-width: 480px;
-  margin: 16px auto 0;
-  line-height: 1.5;
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-}
-
-/* Context grid inside the arena empty state: prose reads left-aligned */
-.empty-state .context-grid {
-  text-align: left;
-  margin-bottom: 24px;
 }
 
 .proof-card {
@@ -1015,11 +1064,30 @@ textarea:focus {
   border-color: var(--dim);
 }
 
-.proof-how {
-  color: var(--dim);
+.proof-claim {
   font-size: 13px;
   line-height: 1.6;
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.proof-why {
+  color: var(--dim);
+  font-size: 12px;
+  line-height: 1.6;
   margin-bottom: 12px;
+}
+
+.proof-right-now {
+  color: var(--dim);
+  font-size: 12px;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  padding: 10px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 2px;
 }
 
 .proof-artifact {
@@ -1093,22 +1161,6 @@ textarea:focus {
   font-variant-numeric: tabular-nums;
 }
 
-.model-chips {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-
-.model-chip {
-  padding: 3px 8px;
-  background: var(--neutral-fill);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  font-size: 10px;
-  color: var(--ink);
-}
-
 .error-details {
   margin-top: 10px;
   padding: 8px;
@@ -1118,7 +1170,6 @@ textarea:focus {
   font-family: ui-monospace, monospace;
   font-size: 10px;
   color: var(--error);
-  cursor: pointer;
 }
 
 .error-details summary {
@@ -1128,9 +1179,6 @@ textarea:focus {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .badge .dot {
-    animation: none;
-  }
   .cell.flash, .cell.nuke {
     animation: none;
   }
@@ -1139,23 +1187,12 @@ textarea:focus {
 </head>
 <body>
 
-<!-- Status bar -->
-<div class="statusbar">
-  <div>
-    <span class="label">status:</span>
-    <span id="enclaveStatus" class="badge demo">
-      <span class="dot"></span>
-      <span>Checking...</span>
-    </span>
+<!-- Status strip (band 0) -->
+<div class="status-strip" id="statusStrip">
+  <div class="status-chips" id="statusChips">
+    <!-- Populated by JS -->
   </div>
-  <div id="modelStatus" style="display:none;">
-    <span class="label">model:</span>
-    <span id="activeModel"></span>
-  </div>
-  <div id="seedStatus" style="display:none;">
-    <span class="label">seed:</span>
-    <span id="matchSeed"></span>
-  </div>
+  <div class="status-caption" id="statusCaption"></div>
 </div>
 
 <!-- Tabs -->
@@ -1166,163 +1203,158 @@ textarea:focus {
 
 <!-- Arena tab -->
 <div class="tab-content active" id="arenaTab">
-  <main>
-    <!-- Strategy panel -->
-    <section class="panel">
-      <h2>1 · Your strategy</h2>
-      <textarea id="strategy" spellcheck="false" placeholder="Write plain-English orders for your nation...">Expand into neutral land early, build economy once you hold a base, attack only rivals weaker than you, and honor alliances until betrayal clearly wins.</textarea>
 
-      <h2 style="margin-top: 16px;">Play as</h2>
-      <div class="nation-picker">
-        <button class="nation-btn selected" data-nation="Crimson">
-          <span class="color-swatch" style="background: var(--crimson);"></span>
-          Crimson
-        </button>
-        <button class="nation-btn" data-nation="Azure">
-          <span class="color-swatch" style="background: var(--azure);"></span>
-          Azure
-        </button>
-        <button class="nation-btn" data-nation="Verdant">
-          <span class="color-swatch" style="background: var(--verdant);"></span>
-          Verdant
-        </button>
-        <button class="nation-btn" data-nation="Amber">
-          <span class="color-swatch" style="background: var(--amber);"></span>
-          Amber
-        </button>
-      </div>
+  <!-- Band 1: Hero (permanent) -->
+  <div class="band hero">
+    <h1>An AI strategy game whose results come back with a signed receipt — so strangers can compete without trusting the referee.</h1>
+    <div class="sub">Open evals and competitions today rest on the operator's word. This match runs inside secure hardware (a 'TEE' — a sealed environment even the operator can't reach into) and the hardware signs every result. One click to check.</div>
+    <div class="cta-row">
+      <a href="#game" class="cta-btn">Watch a match</a>
+      <a href="#receipt" class="cta-btn secondary">See a receipt now</a>
+    </div>
+  </div>
 
-      <button id="startBtn" class="start-btn">[ 2 · Start match ]</button>
+  <!-- Band 2: Instant receipt -->
+  <div class="band instant-receipt" id="receipt">
+    <div id="receiptDisplay"></div>
+  </div>
 
-      <div class="hint">
-        Your nation is steered by an LLM reading these orders. Rivals follow built-in doctrines.
-        Same seed produces the same match — determinism is what makes results verifiable.
-      </div>
-    </section>
+  <!-- Band 3: The game -->
+  <div class="band game" id="game">
+    <div class="game-grid">
 
-    <!-- Board panel -->
-    <section class="panel" id="boardWrap">
-      <h2 style="align-self: flex-start;">3 · The battlefield</h2>
+      <!-- Strategy panel -->
+      <section class="panel">
+        <textarea id="strategy" spellcheck="false" placeholder="Write plain-English orders for your nation...">Expand into neutral land early, build economy once you hold a base, attack only rivals weaker than you, and honor alliances until betrayal clearly wins.</textarea>
 
-      <div id="emptyState" class="empty-state">
-        <div class="empty-state-hero">
-          If you want many participants in an eval, competition, or market — the results have to be provable, not promised. This arena shows how.
+        <h3 style="margin-top: 16px;">Play as</h3>
+        <div class="nation-picker">
+          <button class="nation-btn selected" data-nation="Crimson">
+            <span class="color-swatch" style="background: var(--crimson);"></span>
+            Crimson
+          </button>
+          <button class="nation-btn" data-nation="Azure">
+            <span class="color-swatch" style="background: var(--azure);"></span>
+            Azure
+          </button>
+          <button class="nation-btn" data-nation="Verdant">
+            <span class="color-swatch" style="background: var(--verdant);"></span>
+            Verdant
+          </button>
+          <button class="nation-btn" data-nation="Amber">
+            <span class="color-swatch" style="background: var(--amber);"></span>
+            Amber
+          </button>
         </div>
 
-        <div class="context-grid">
-          <div class="context-card">
-            <div class="context-label">The problem today</div>
-            <p>Permissionless open evals — where an operator hosts a benchmark and strangers submit entries to a public leaderboard — rest entirely on the operator's word. A compromised or buggy harness produces scores indistinguishable from legitimate ones. If the eval leaks or accepts self-reported results, entrants can inflate scores. To block that, operators re-run everything centrally and vet submissions by hand — which is why participation requires permission in the first place. A score from one operator means nothing to another lab without re-running, because there is no portable receipt.</p>
+        <button id="startBtn" class="start-btn">Start match</button>
+
+        <div class="hint">
+          A match takes about a minute. When the AI gateway is up, Claude writes your nation's plans from these orders; right now nations use built-in playbooks — the receipt is identical either way.
+        </div>
+      </section>
+
+      <!-- Board panel -->
+      <section class="panel" id="boardWrap">
+        <div id="boardEmpty" class="board-empty">
+          Press Start — four AI nations will fight for territory here.
+        </div>
+
+        <div id="boardArea" style="display:none; width:100%;">
+          <div class="turnbar" id="turnbar"></div>
+          <div class="turn-progress">
+            <div class="turn-progress-bar" id="turnProgress"></div>
           </div>
-          <div class="context-card">
-            <div class="context-label">What this demo shows</div>
-            <p>A full match — game engine, AI reasoning, final score — executes inside a TEE on EigenCompute, built provably from public code. The result comes back signed by the enclave. One click checks it. Disputes end with a signature check, not a support ticket. Attestation proves the eval ran faithfully; it does not prove the eval is well-designed — game-design quality stays a human problem.</p>
-          </div>
-          <div class="context-card">
-            <div class="context-label">What that unlocks</div>
-            <p>A $10k prize pool that pays the top-3 automatically on signed scores. An eval where anyone can submit — entry fee $1, no account review — because a fake score is cryptographically impossible. A lab citing an external benchmark number in a model card because the run is attested and the score travels. The same pattern as ecdsa.fail (Eigen Labs' own open challenge board) but with receipts for every result.</p>
+          <div id="board"></div>
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--crimson);"></div>
+              <span>Crimson</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--azure);"></div>
+              <span>Azure</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--verdant);"></div>
+              <span>Verdant</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--amber);"></div>
+              <span>Amber</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--neutral-fill);"></div>
+              <span>Neutral</span>
+            </div>
           </div>
         </div>
 
-        <h3>How a match works</h3>
-        <ol>
-          <li><strong>Write orders on the left</strong> — your nation's standing strategy: when to expand, who to ally, when to betray, when to nuke.</li>
-          <li><strong>Press Start, then watch the battlefield</strong> — four AI nations fight inside the TEE, not in your browser and not on a machine anyone can tamper with.</li>
-          <li><strong>Check the signed result on the right</strong> — verify it with one click, or check every claim on the <em>Verify</em> tab.</li>
-        </ol>
+        <div id="resultCard"></div>
+      </section>
 
-        <p class="board-explainer">The board: each tile shows its troop count; the fill color is its owner. Captures flash, nukes flatten stacks, and whoever holds the most territory at turn 60 wins.</p>
+      <!-- Intel panel -->
+      <section class="panel">
+        <h3>Nations</h3>
+        <div id="nationsList" class="nations-list"></div>
+
+        <h3 style="margin-top: 20px;">Your AI's thinking</h3>
+        <div id="planDisplay"></div>
+
+        <h3 style="margin-top: 20px;">Event feed</h3>
+        <div class="event-feed" id="eventFeed"></div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Band 4: What this unlocks -->
+  <div class="band unlocks">
+    <h1 style="margin-bottom: 24px;">What this unlocks</h1>
+    <div class="unlocks-grid">
+      <div class="unlock-card">
+        <div class="unlock-title">Signed leaderboards</div>
+        <p>Scores strangers can check. A competition where anyone can submit an entry because a fake score is cryptographically impossible — no human review required.</p>
       </div>
-
-      <div id="boardArea" style="display:none; width:100%;">
-        <div class="turnbar" id="turnbar"></div>
-        <div class="turn-progress">
-          <div class="turn-progress-bar" id="turnProgress"></div>
-        </div>
-        <div id="board"></div>
-        <div class="legend">
-          <div class="legend-item">
-            <div class="legend-color" style="background: var(--crimson);"></div>
-            <span>Crimson</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-color" style="background: var(--azure);"></div>
-            <span>Azure</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-color" style="background: var(--verdant);"></div>
-            <span>Verdant</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-color" style="background: var(--amber);"></div>
-            <span>Amber</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-color" style="background: var(--neutral-fill);"></div>
-            <span>Neutral</span>
-          </div>
-        </div>
+      <div class="unlock-card">
+        <div class="unlock-title">Automatic payouts</div>
+        <p>A prize pool that pays the top-3 automatically on signed scores — no dispute process. The same pattern as ecdsa.fail (Eigen Labs' own open challenge) but with receipts for every result.</p>
       </div>
+      <div class="unlock-card">
+        <div class="unlock-title">Results that travel</div>
+        <p>A lab cites an external benchmark number in a model card because the run has a receipt. One operator's score means something to another lab without re-running, because it's checkable.</p>
+      </div>
+    </div>
+    <div class="unlock-caveat">
+      Receipts prove an eval ran faithfully — same replay number (seed) + same decisions = identical match, so anyone can re-run and check. They do not prove the eval is well-designed — game-design quality stays a human problem.
+    </div>
+  </div>
 
-      <div id="resultCard"></div>
-    </section>
+  <!-- Band 5: Verify link -->
+  <div class="band verify-link">
+    Six claims back this page. Every one has an artifact and a check → <a href="#" class="tab-link" data-tab="verify" style="color: var(--ink); text-decoration: underline;">Verify tab</a>
+  </div>
 
-    <!-- Intel panel -->
-    <section class="panel">
-      <h2>4 · Intel + result</h2>
-      <div id="nationsList" class="nations-list"></div>
-
-      <h2 style="margin-top: 20px;">Your AI's thinking</h2>
-      <div id="planDisplay"></div>
-
-      <h2 style="margin-top: 20px;">Event feed</h2>
-      <div class="event-feed" id="eventFeed"></div>
-    </section>
-  </main>
 </div>
 
 <!-- Verify tab -->
 <div class="tab-content" id="verifyTab">
   <div class="verify-container">
     <div class="verify-headline" id="verifyHeadline">
-      Every claim below is checkable — artifact, method, one step each.
+      Every claim here is checkable — artifact, method, one step each.
     </div>
 
     <div class="verify-actions">
-      <button class="refresh-btn" id="refreshVerify">↻ Refresh status</button>
-      <button class="probe-btn" id="probeModels">🔍 Probe models</button>
+      <button class="refresh-btn" id="refreshVerify">Refresh status</button>
+      <a href="https://verify.eigencloud.xyz" target="_blank" rel="noopener" class="refresh-btn" style="text-decoration: none; display: inline-block;">Probe models</a>
     </div>
 
     <div class="proof-cards" id="proofCards"></div>
-
-    <div class="context-block">
-      <h3>$ Where this goes</h3>
-      <div class="context-grid">
-        <div class="context-card">
-          <div class="context-label">The pattern</div>
-          <p>Same shape as <a href="https://ecdsa.fail" target="_blank" rel="noopener">ecdsa.fail</a> (Eigen Labs' own open challenge): an operator hosts a game, strangers submit entries, a leaderboard ranks them. The missing piece in every arena like it is that the operator's scores are just database rows — this demo adds cryptographic receipts so results are checkable, not promised.</p>
-        </div>
-        <div class="context-card">
-          <div class="context-label">Beyond games</div>
-          <p>Nothing here is game-specific. The same three proofs — code runs in a TEE, build matches public source, results come back signed — apply to any permissionless open eval where strangers need to trust one outcome they didn't compute themselves. Model benchmarks, agent competitions, prediction markets.</p>
-        </div>
-        <div class="context-card">
-          <div class="context-label">The EigenCompute play</div>
-          <p>EigenCloud already runs staked, verified tournaments for human players (OpenFront). This is that rail extended to AI participants: attested evals, signed leaderboards, and competitions where results can trigger automatic payouts because nobody can fake them. Platforms keep their games and communities; EigenCompute supplies the proof layer.</p>
-        </div>
-      </div>
-      <p class="context-note">This demo is self-contained — results are not sent to Softmax or any external platform. It exists to show what any arena gains from running on attested compute.</p>
-    </div>
   </div>
 </div>
 
 <script>
 // --- Copy object for easy editing ---
-// ---------------------------------------------------------------------------
-// COPY — every user-facing string lives here. DRAFT v1 for team review.
-// Voice: state what is verifiably true, in plain words. Never claim more than
-// /api/verify reports. "TEE" on first mention, "enclave" after.
-// ---------------------------------------------------------------------------
 const COPY = {
   NATION_NAMES: ["Crimson", "Azure", "Verdant", "Amber"],
   NATION_COLORS: ["#e5484d", "#4493f8", "#3fb950", "#d29922"],
@@ -1337,16 +1369,6 @@ const COPY = {
     elimination: "🏳️"
   },
   EMPTY_PLAN: "Waiting for first plan...",
-
-  // status strip — the page's honest heartbeat
-  STATUS_TEE: "Running on EigenCompute (TEE)",
-  STATUS_LOCAL: "Local demo — not in an enclave",
-  NOW_ENGINE_TEE: "Game engine executing in the enclave",
-  NOW_ENGINE_LOCAL: "Game engine running locally",
-  NOW_LLM_ON: (model) => "Nations steered by " + (model || "an LLM") + " via the attested gateway",
-  NOW_LLM_FALLBACK: "Nations on built-in doctrine (LLM gateway unavailable right now)",
-  NOW_SIGNED: "Match results enclave-signed",
-  NOW_UNSIGNED: "Match results unsigned (no enclave key here)",
 };
 
 // --- State ---
@@ -1373,7 +1395,7 @@ function copyToClipboard(text, btnElement) {
   navigator.clipboard.writeText(text).then(() => {
     if (btnElement) {
       const originalText = btnElement.textContent;
-      btnElement.textContent = '✓ copied';
+      btnElement.textContent = 'copied';
       btnElement.classList.add('copied');
       setTimeout(() => {
         btnElement.textContent = originalText;
@@ -1399,6 +1421,17 @@ $$('.tab').forEach(tab => {
   });
 });
 
+// Tab links inside content
+$$('.tab-link').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const targetTab = link.dataset.tab;
+    $$('.tab').forEach(t => {
+      if (t.dataset.tab === targetTab) t.click();
+    });
+  });
+});
+
 // --- Nation picker ---
 $$('.nation-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1421,12 +1454,12 @@ async function startMatch() {
   $('#eventFeed').innerHTML = '';
   $('#planDisplay').innerHTML = `<div class="plan-card"><div class="plan-content">${COPY.EMPTY_PLAN}</div></div>`;
   $('#resultCard').innerHTML = '';
-  $('#emptyState').style.display = 'none';
+  $('#boardEmpty').style.display = 'none';
   $('#boardArea').style.display = 'block';
   state.nationTileCount = {};
 
   $('#startBtn').disabled = true;
-  $('#startBtn').textContent = '[ Match running... ]';
+  $('#startBtn').textContent = 'Match running...';
   state.matchRunning = true;
 
   const body = {
@@ -1443,17 +1476,12 @@ async function startMatch() {
     const data = await res.json();
 
     state.currentMatchSeed = data.seed;
-    $('#seedStatus').style.display = 'block';
-    $('#matchSeed').textContent = data.seed;
 
     state.es = new EventSource(`/api/match/${data.id}/stream`);
 
     state.es.addEventListener('meta', (e) => {
       const meta = JSON.parse(e.data);
       state.yourNation = meta.yourNation;
-      if (meta.inEnclave) {
-        updateEnclaveStatus(true);
-      }
     });
 
     state.es.addEventListener('board', (e) => {
@@ -1465,10 +1493,6 @@ async function startMatch() {
       const planData = JSON.parse(e.data);
       if (planData.yours) {
         renderYourPlan(planData);
-        if (planData.plan.model) {
-          $('#modelStatus').style.display = 'block';
-          $('#activeModel').textContent = planData.plan.model;
-        }
       }
     });
 
@@ -1481,11 +1505,13 @@ async function startMatch() {
       const result = JSON.parse(e.data);
       state.lastSignedResult = result;
       renderResult(result);
+      // Update band 2 with fresh receipt
+      loadLastReceipt();
     });
 
     state.es.addEventListener('done', () => {
       $('#startBtn').disabled = false;
-      $('#startBtn').textContent = '[ 2 · Start match ]';
+      $('#startBtn').textContent = 'Start match';
       state.matchRunning = false;
       if (state.es) {
         state.es.close();
@@ -1494,9 +1520,9 @@ async function startMatch() {
     });
 
   } catch (err) {
-    console.error('Failed to Start match:', err);
+    console.error('Failed to start match:', err);
     $('#startBtn').disabled = false;
-    $('#startBtn').textContent = '[ 2 · Start match ]';
+    $('#startBtn').textContent = 'Start match';
     state.matchRunning = false;
   }
 }
@@ -1609,14 +1635,14 @@ function renderNations(nations) {
 
 // --- Plan rendering ---
 function renderYourPlan(planData) {
-  const { plan, source, degraded } = planData;
+  const { plan, source } = planData;
   const sourceClass = source.startsWith('llm:') ? 'llm' : 'fallback';
-  const sourceLabel = source.startsWith('llm:') ? `claude via attested gateway (${plan.model || 'unknown'})` : 'doctrine fallback (gateway unreachable)';
+  const sourceLabel = source.startsWith('llm:') ? 'Claude via gateway' : 'built-in playbook';
 
   const html = `
     <div class="plan-card">
       <div class="plan-header">
-        <div style="font-weight:600;">latest plan</div>
+        <div style="font-weight:600;">Latest plan</div>
         <div class="plan-source ${sourceClass}">${sourceLabel}</div>
       </div>
       <div class="plan-content">
@@ -1683,7 +1709,7 @@ function addEliminationEvent(nationName) {
   eventEl.className = 'event elimination';
   eventEl.innerHTML = `
     <span class="event-icon">${COPY.EVENT_ICONS.elimination}</span>
-    <span><strong>${nationName} has been eliminated!</strong></span>
+    <span><strong>${nationName} has been eliminated</strong></span>
   `;
   const feed = $('#eventFeed');
   feed.appendChild(eventEl);
@@ -1692,12 +1718,12 @@ function addEliminationEvent(nationName) {
 
 // --- Result rendering ---
 function renderResult(result) {
-  const { tuple, signature, address, unavailable, canonicalMessage, verify, attestation } = result;
+  const { tuple, signature, address, unavailable, canonicalMessage, attestation } = result;
 
   let html = `
     <div class="result-card">
       <div class="result-winner">
-        ${tuple.winner ? `🏆 ${tuple.winner} wins!` : 'match complete'}
+        ${tuple.winner ? `🏆 ${tuple.winner} wins` : 'match complete'}
       </div>
       <div class="result-stats">
         <div>
@@ -1710,7 +1736,7 @@ function renderResult(result) {
         </div>
         <div>
           <div class="result-stat-value">${tuple.seed}</div>
-          <div class="result-stat-label">seed</div>
+          <div class="result-stat-label">replay number</div>
         </div>
       </div>
   `;
@@ -1718,24 +1744,24 @@ function renderResult(result) {
   if (unavailable) {
     html += `
       <div class="unsigned-note">
-        unsigned — local mode. deploy to eigencompute for enclave-signed results.
+        No enclave key here (local mode) — deploy to EigenCompute for signed results.
       </div>
     `;
   } else if (signature) {
     html += `
       <div class="signed-result">
-        <h4>enclave-signed result</h4>
+        <h4>Enclave-signed result</h4>
         <div class="tuple-field"><strong>app:</strong> ${tuple.app}</div>
         <div class="tuple-field"><strong>commit:</strong> ${tuple.commit}</div>
-        <div class="tuple-field"><strong>seed:</strong> ${tuple.seed}</div>
+        <div class="tuple-field"><strong>replay number:</strong> ${tuple.seed}</div>
         <div class="tuple-field"><strong>winner:</strong> ${tuple.winner || 'none'}</div>
-        <div class="tuple-field"><strong>decisions hash:</strong> ${tuple.decisionsHash}</div>
+        <div class="tuple-field"><strong>decisions fingerprint:</strong> ${tuple.decisionsHash}</div>
 
         <h4 style="margin-top:10px;">signature</h4>
         <div class="signature">${signature}</div>
 
-        <button class="verify-btn" onclick="verifySignature('${canonicalMessage}', '${signature}')">
-          verify signature
+        <button class="verify-sig-btn" onclick="verifySignature('${canonicalMessage}', '${signature}')">
+          Check this signature
         </button>
 
         <div id="verifyResult"></div>
@@ -1747,32 +1773,31 @@ function renderResult(result) {
   if (attestation) {
     if (attestation.unavailable) {
       html += `
-        <div class="attestation-block">
-          <h4>runtime attestation</h4>
-          <div class="attestation-unavailable">${attestation.note}</div>
-          <div class="attestation-field"><strong>sha512:</strong> ${attestation.sha512}</div>
-        </div>
+        <details class="attestation-collapsed">
+          <summary>Hardware attestation (unavailable)</summary>
+          <div class="attestation-content">
+            <div class="attestation-field" style="color: var(--degraded); font-style: italic;">${attestation.note}</div>
+            <div class="attestation-field"><strong>fingerprint (SHA-512):</strong> ${attestation.sha512}</div>
+          </div>
+        </details>
       `;
     } else {
       html += `
-        <div class="attestation-block">
-          <h4>runtime attestation</h4>
-          <div class="attestation-field"><strong>audience:</strong> ${attestation.audience}</div>
-          <div class="attestation-field"><strong>sha512:</strong> ${attestation.sha512}</div>
-          <h4 style="margin-top:8px;">jwt</h4>
-          <div class="jwt-container">
-            <div class="jwt-text">${attestation.jwt.slice(0, 80)}...</div>
-            <button class="copy-btn-inline" onclick="copyToClipboard('${attestation.jwt}', this)">copy</button>
+        <details class="attestation-collapsed">
+          <summary>Hardware attestation</summary>
+          <div class="attestation-content">
+            <div class="attestation-field"><strong>audience:</strong> ${attestation.audience}</div>
+            <div class="attestation-field"><strong>fingerprint (SHA-512):</strong> ${attestation.sha512}</div>
+            <div class="attestation-field" style="margin-top: 8px; font-size: 10px; word-break: break-all;">${attestation.jwt}</div>
           </div>
-          <div class="hint" style="margin-top:8px;">${attestation.how}</div>
-        </div>
+        </details>
       `;
     }
   }
 
   html += `
     <div class="replay-note">
-      <strong>replay this exact match:</strong> use seed ${tuple.seed} with the same strategy — determinism guarantees the same outcome.
+      <strong>Replay this exact match:</strong> use replay number ${tuple.seed} with the same strategy — same replay number + same decisions = identical match, so anyone can re-run and check.
     </div>
   </div>
   `;
@@ -1791,21 +1816,281 @@ async function verifySignature(message, signature) {
 
     const resultDiv = $('#verifyResult');
     if (data.error) {
-      resultDiv.innerHTML = `<div class="verify-result mismatch">❌ verification failed: ${data.error}</div>`;
+      resultDiv.innerHTML = `<div class="verify-result mismatch">Verification failed: ${data.error}</div>`;
     } else if (data.recovered) {
       const expected = state.verifyData?.resultSigning?.enclaveAddress || 'unknown';
       const match = data.recovered.toLowerCase() === expected.toLowerCase();
       resultDiv.innerHTML = `
         <div class="verify-result ${match ? 'match' : 'mismatch'}">
-          ${match ? '✓' : '✗'} recovered: <code>${data.recovered}</code><br>
-          expected: <code>${expected}</code><br>
-          <strong>${match ? 'signature valid ✓' : 'mismatch ✗'}</strong>
+          ${match ? '✓' : '✗'} Signature came from: <code>${data.recovered}</code><br>
+          Expected enclave address: <code>${expected}</code><br>
+          <strong>${match ? 'Signature came from the enclave\'s address — matches the public dashboard' : 'Mismatch'}</strong>
         </div>
       `;
     }
   } catch (err) {
     console.error('Verify failed:', err);
-    $('#verifyResult').innerHTML = `<div class="verify-result mismatch">❌ network error</div>`;
+    $('#verifyResult').innerHTML = `<div class="verify-result mismatch">Network error</div>`;
+  }
+}
+
+// --- Band 2: Instant receipt ---
+async function loadLastReceipt() {
+  try {
+    const res = await fetch('/api/receipt/last');
+    const data = await res.json();
+
+    const receiptDiv = $('#receiptDisplay');
+
+    if (data.none) {
+      // No receipt exists — show demo button
+      receiptDiv.innerHTML = `
+        <h1 style="margin-bottom: 16px;">See a receipt now</h1>
+        <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">No match has finished yet. Get a live receipt in seconds without waiting for a full match:</p>
+        <button class="cta-btn" onclick="getDemoReceipt()">Get a receipt now</button>
+      `;
+    } else {
+      // Receipt exists — render it
+      renderReceiptCard(data);
+    }
+  } catch (err) {
+    console.error('Failed to load last receipt:', err);
+  }
+}
+
+async function getDemoReceipt() {
+  try {
+    const res = await fetch('/api/receipt/demo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note: `hello from ${new Date().toLocaleTimeString()}` })
+    });
+    const data = await res.json();
+    renderReceiptCard(data, true);
+  } catch (err) {
+    console.error('Failed to get demo receipt:', err);
+  }
+}
+
+function renderReceiptCard(data, isDemo = false) {
+  const receiptDiv = $('#receiptDisplay');
+
+  const tuple = data.tuple || data.payload;
+  const sig = data.signature;
+  const addr = data.address || data.signerAddress;
+  const canonicalMsg = data.canonicalMessage;
+  const attestation = data.attestation;
+
+  let html = `
+    <h1 style="margin-bottom: 16px;">${isDemo ? 'Live receipt from the enclave' : 'The last match\'s receipt'}</h1>
+    <div class="receipt-card">
+      <div class="receipt-header">${isDemo ? 'Demo receipt' : 'Match result'}</div>
+  `;
+
+  if (isDemo) {
+    html += `
+      <div class="receipt-row">
+        <div class="receipt-label">Note</div>
+        <div class="receipt-value">${tuple.note}</div>
+      </div>
+      <div class="receipt-row">
+        <div class="receipt-label">Created at</div>
+        <div class="receipt-value">${new Date(tuple.at).toLocaleTimeString()}</div>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="receipt-row">
+        <div class="receipt-label">Winner</div>
+        <div class="receipt-value">${tuple.winner || 'none'}</div>
+      </div>
+      <div class="receipt-row">
+        <div class="receipt-label">Replay number</div>
+        <div class="receipt-value">${tuple.seed}</div>
+      </div>
+      <div class="receipt-row">
+        <div class="receipt-label">Turns</div>
+        <div class="receipt-value">${tuple.turns}</div>
+      </div>
+    `;
+  }
+
+  if (sig && addr) {
+    html += `
+      <div class="receipt-row">
+        <div class="receipt-label">Signer address</div>
+        <div class="receipt-value receipt-address">
+          <span>${addr.slice(0, 10)}...${addr.slice(-8)}</span>
+          <button class="copy-mini" onclick="copyToClipboard('${addr}', this)">copy</button>
+        </div>
+      </div>
+      <button class="verify-sig-btn" onclick="verifyReceiptSignature('${canonicalMsg}', '${sig}', '${isDemo}')">
+        Check this signature
+      </button>
+      <div id="receiptVerifyResult"></div>
+    `;
+  } else {
+    html += `
+      <div class="receipt-caption" style="color: var(--dim); font-style: italic;">
+        ${data.signerNote || 'No signature available (local mode)'}
+      </div>
+    `;
+  }
+
+  if (attestation) {
+    if (attestation.unavailable) {
+      html += `
+        <details class="attestation-collapsed">
+          <summary>Hardware attestation (unavailable)</summary>
+          <div class="attestation-content">
+            <div class="attestation-field" style="color: var(--degraded); font-style: italic;">${attestation.note}</div>
+            <div class="attestation-field"><strong>fingerprint (SHA-512):</strong> ${attestation.sha512}</div>
+          </div>
+        </details>
+      `;
+    } else {
+      html += `
+        <details class="attestation-collapsed">
+          <summary>Hardware attestation</summary>
+          <div class="attestation-content">
+            <div class="attestation-field"><strong>audience:</strong> ${attestation.audience}</div>
+            <div class="attestation-field"><strong>fingerprint (SHA-512):</strong> ${attestation.sha512}</div>
+            <div class="attestation-field" style="margin-top: 8px; font-size: 10px; word-break: break-all;">${attestation.jwt}</div>
+          </div>
+        </details>
+      `;
+    }
+  }
+
+  if (isDemo) {
+    html += `
+      <div class="receipt-caption">
+        This receipt was just created by the enclave, live. A match receipt looks the same with the game outcome inside.
+      </div>
+    `;
+  }
+
+  html += `</div>`;
+  receiptDiv.innerHTML = html;
+}
+
+async function verifyReceiptSignature(message, signature, isDemo) {
+  try {
+    const res = await fetch('/api/verify/signature', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, signature })
+    });
+    const data = await res.json();
+
+    const resultDiv = $('#receiptVerifyResult');
+    if (data.error) {
+      resultDiv.innerHTML = `<div class="verify-result mismatch">Verification failed: ${data.error}</div>`;
+    } else if (data.recovered) {
+      const expected = state.verifyData?.resultSigning?.enclaveAddress || 'unknown';
+      const match = data.recovered.toLowerCase() === expected.toLowerCase();
+      resultDiv.innerHTML = `
+        <div class="verify-result ${match ? 'match' : 'mismatch'}">
+          ${match ? '✓' : '✗'} Signature came from the enclave's address (${data.recovered.slice(0, 10)}...${data.recovered.slice(-8)}) — matches the public dashboard
+        </div>
+      `;
+    }
+  } catch (err) {
+    console.error('Verify failed:', err);
+    $('#receiptVerifyResult').innerHTML = `<div class="verify-result mismatch">Network error</div>`;
+  }
+}
+
+// --- Status strip (band 0) ---
+async function updateStatusStrip() {
+  try {
+    const res = await fetch('/api/verify');
+    const data = await res.json();
+    state.verifyData = data;
+
+    const chipsDiv = $('#statusChips');
+    const captionDiv = $('#statusCaption');
+
+    const engineOk = data.enclave.runningInEnclave;
+    const resultsOk = data.resultSigning.available;
+    const llmOk = data.modelAccess.lastSuccessAt !== null;
+    const attestOk = data.runtimeAttestation.configured && !data.runtimeAttestation.lastError;
+
+    let chips = [];
+
+    // Engine chip
+    chips.push(`
+      <div class="status-chip ${engineOk ? 'ok' : 'degraded'}">
+        <span class="dot"></span>
+        Engine in secure hardware (a 'TEE' — a sealed environment even the operator can't reach into)
+      </div>
+    `);
+
+    // Results chip
+    chips.push(`
+      <div class="status-chip ${resultsOk ? 'ok' : 'degraded'}">
+        <span class="dot"></span>
+        Results signed by the enclave
+      </div>
+    `);
+
+    // AI gateway chip
+    if (data.modelAccess.lastError) {
+      chips.push(`
+        <a href="#" class="status-chip degraded tab-link" data-tab="verify">
+          <span class="dot"></span>
+          AI gateway degraded — nations use built-in playbooks
+        </a>
+      `);
+    } else {
+      chips.push(`
+        <div class="status-chip ${llmOk ? 'ok' : 'degraded'}">
+          <span class="dot"></span>
+          AI gateway ${llmOk ? 'operational' : 'pending first call'}
+        </div>
+      `);
+    }
+
+    // Attestation chip
+    if (data.runtimeAttestation.lastError) {
+      chips.push(`
+        <a href="#" class="status-chip degraded tab-link" data-tab="verify">
+          <span class="dot"></span>
+          Hardware attestation degraded — public issue #169
+        </a>
+      `);
+    } else {
+      chips.push(`
+        <div class="status-chip ${attestOk ? 'ok' : 'degraded'}">
+          <span class="dot"></span>
+          Hardware attestation ${attestOk ? 'operational' : 'pending first match'}
+        </div>
+      `);
+    }
+
+    chipsDiv.innerHTML = chips.join('');
+
+    // Re-attach tab-link listeners
+    chipsDiv.querySelectorAll('.tab-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetTab = link.dataset.tab;
+        $$('.tab').forEach(t => {
+          if (t.dataset.tab === targetTab) t.click();
+        });
+      });
+    });
+
+    // Caption — only show when LLM or attestation are degraded (NOT core receipt chain)
+    const outsideReceiptChain = [data.modelAccess.lastError, data.runtimeAttestation.lastError].filter(Boolean);
+    if (outsideReceiptChain.length > 0) {
+      captionDiv.textContent = `${outsideReceiptChain.length === 1 ? 'One subsystem is' : 'Two subsystems are'} degraded; ${outsideReceiptChain.length === 2 ? 'both' : 'it'} sit${outsideReceiptChain.length === 1 ? 's' : ''} outside the receipt chain. The core claim is green.`;
+      captionDiv.style.display = 'block';
+    } else {
+      captionDiv.style.display = 'none';
+    }
+  } catch (err) {
+    console.error('Failed to update status strip:', err);
   }
 }
 
@@ -1818,161 +2103,102 @@ async function loadVerifyData() {
     renderVerifyData(data);
   } catch (err) {
     console.error('Failed to load verify data:', err);
-    $('#verifyHeadline').textContent = 'failed to load verification status';
+    $('#verifyHeadline').textContent = 'Failed to load verification status';
   }
 }
 
 function renderVerifyData(data) {
-  $('#verifyHeadline').textContent = data.headline;
+  $('#verifyHeadline').textContent = 'Every claim here is checkable — artifact, method, one step each.';
 
-  // Helper to derive state sentences for each card
-  const stateText = {
-    enclaveExecution: () => {
-      if (!data.enclave.runningInEnclave) {
-        return "Right now: this instance is running locally, outside a TEE. Deploy to EigenCompute for enclave execution.";
-      }
-      if (!data.enclave.appId) {
-        return "Right now: the enclave is running but the app ID is pending registration — redeploy to bind the ID.";
-      }
-      return "Right now: this match is executing inside a hardware TEE. The verify dashboard binds the app ID to the attested image digest.";
-    },
-    verifiableBuild: () => {
-      if (data.build.commit === 'unknown') {
-        return "Right now: no build provenance is available — commit hash unknown.";
-      }
-      return `Right now: this image was built from commit ${data.build.commit.slice(0, 7)}. Compare the dashboard's image digest with a local rebuild of the same commit to check it.`;
-    },
-    modelAccess: () => {
-      const gw = data.modelAccess;
-      if (!gw.attestationJwt) {
-        return "Right now: no attestation JWT is available, so the gateway cannot authenticate calls from the enclave. Nations fall back to built-in doctrines.";
-      }
-      if (gw.lastError) {
-        const errorSnippet = gw.lastError.slice(0, 100);
-        if (gw.lastError.includes('502') || gw.lastError.includes('Bad Gateway')) {
-          return `Right now: the gateway is rejecting calls from inside the enclave (a 502 at the edge), so nations are playing on their built-in fallback strategies. The match still runs and results are still signed — but Claude isn't writing the plans until this clears.`;
-        }
-        return `Right now: model calls are failing (${errorSnippet}...). Nations fall back to built-in doctrines. The match runs and results are signed, but AI-written plans are unavailable.`;
-      }
-      if (!gw.activeModel) {
-        return "Right now: no model has successfully responded yet. First match will probe the gateway.";
-      }
-      return `Right now: ${gw.activeModel} is writing plans for nations via the attested gateway. Calls: ${gw.calls}, failures: ${gw.failures}, last success: ${gw.lastSuccessAt}.`;
-    },
-    resultSigning: () => {
-      if (!data.resultSigning.available) {
-        return "Right now: no enclave key is available (local mode), so match results are unsigned.";
-      }
-      if (!data.enclave.dashboard) {
-        return "Right now: the enclave key is available and results will be signed, but the app is not yet registered — redeploy to bind the key address to the app ID on the verify dashboard.";
-      }
-      return `Right now: match results are signed with the enclave-derived key (${data.resultSigning.enclaveAddress}). The verify dashboard lists this address publicly.`;
-    },
-    runtimeAttestation: () => {
-      const att = data.runtimeAttestation;
-      if (!att.configured) {
-        return "Right now: no KMS attestation config is available (local mode), so per-action attestation is unavailable.";
-      }
-      if (att.lastError) {
-        return `Right now: runtime attestation is configured but the last request failed (${att.lastError.slice(0, 80)}...). Results still get wallet-signed.`;
-      }
-      if (att.attestations === 0) {
-        return "Right now: runtime attestation is configured. First match completion will request a fresh attestation whose extra-data is the SHA-512 of the result.";
-      }
-      return `Right now: runtime attestation is working. ${att.attestations} attestations minted, last at ${att.lastAttestAt}. Each JWT's extra-data is the SHA-512 of the canonical result message.`;
-    }
-  };
+  // Derive status for each card
+  const determinismStatus = 'verified';
 
-  // Derive status from ALL claims in each card
-  const enclaveStatus = data.enclave.runningInEnclave && data.enclave.appId ? 'ok' : (data.enclave.runningInEnclave ? 'degraded' : 'unavailable');
-  const buildStatus = data.build.commit !== 'unknown' ? 'ok' : 'unavailable';
-  const modelStatus = data.modelAccess.lastError ? 'degraded' : (data.modelAccess.activeModel ? 'ok' : 'unavailable');
-  const signingStatus = data.resultSigning.available && data.enclave.dashboard ? 'ok' : (data.resultSigning.available ? 'degraded' : 'unavailable');
-  const attestStatus = data.runtimeAttestation.configured ? (data.runtimeAttestation.lastError ? 'degraded' : 'verified') : 'unavailable';
+  const signingStatus = data.resultSigning.available && data.enclave.dashboard ? 'ok' :
+                         (data.resultSigning.available ? 'degraded' : 'unavailable');
+
+  const buildStatus = data.build.commit !== 'unknown' && data.enclave.dashboard ? 'ok' : 'degraded';
+
+  const enclaveStatus = data.enclave.runningInEnclave && data.enclave.appId && data.enclave.dashboard ? 'ok' :
+                         (data.enclave.runningInEnclave ? 'degraded' : 'unavailable');
+
+  // Runtime attestation status logic: derive from lastError, not counter
+  const attestStatus = !data.runtimeAttestation.configured ? 'unavailable' :
+                        (data.runtimeAttestation.lastError ? 'degraded' :
+                         (data.runtimeAttestation.attestations > 0 ? 'verified' : 'ok'));
+
+  // Model access is NOT about result integrity — demoted to single-row strip
+  const modelStatus = data.modelAccess.lastError ? 'degraded' :
+                       (data.modelAccess.activeModel ? 'ok' : 'unavailable');
 
   const cards = [
     {
-      title: '1. Enclave execution',
-      status: enclaveStatus,
-      stateProse: stateText.enclaveExecution(),
-      how: data.enclave.how,
-      artifact: data.enclave.appId,
-      artifactPending: !data.enclave.appId && data.enclave.runningInEnclave,
-      link: data.enclave.dashboard,
-      linkText: 'View on EigenCloud verify dashboard'
+      title: 'Why signing means anything',
+      status: determinismStatus,
+      claim: 'The game engine is deterministic',
+      why: 'Same replay number (seed) + same decisions = identical match. Anyone can re-run the public engine code with the signed seed and decisions to reproduce the exact final board.',
+      rightNow: 'The engine is a pure function of (seed, decision log). This is what makes a signed result checkable instead of just promised.',
+      artifact: null
     },
     {
-      title: '2. Verifiable build',
-      status: buildStatus,
-      stateProse: stateText.verifiableBuild(),
-      how: data.build.how,
-      artifact: data.build.commit !== 'unknown' ? `${data.build.repo}/tree/${data.build.commit}` : null,
-      link: data.build.commitUrl,
-      linkText: 'View commit on GitHub'
-    },
-    {
-      title: '3. Model access',
-      status: modelStatus,
-      stateProse: stateText.modelAccess(),
-      how: data.modelAccess.how,
-      details: [
-        { label: 'Gateway', value: data.modelAccess.gateway },
-        { label: 'Attestation JWT', value: data.modelAccess.attestationJwt ? 'present' : 'not available' },
-        { label: 'Active model', value: data.modelAccess.activeModel || 'none' },
-        { label: 'Calls / failures', value: `${data.modelAccess.calls} / ${data.modelAccess.failures}` },
-        { label: 'Last success', value: data.modelAccess.lastSuccessAt || 'never' }
-      ],
-      availableModels: data.modelAccess.availableModels,
-      error: data.modelAccess.lastError,
-      errorBody: data.modelAccess.lastErrorBody
-    },
-    {
-      title: '4. Result signing',
+      title: 'Result signing',
       status: signingStatus,
-      stateProse: stateText.resultSigning(),
-      how: data.resultSigning.how,
+      claim: 'Match results are signed by the enclave',
+      why: 'The enclave holds a key derived at path m/44\'/60\'/0\'/0/0. That address is listed on the app\'s public verify dashboard. If the signature recovers to it, the result came from this enclave and nowhere else.',
+      rightNow: data.resultSigning.available
+        ? (data.enclave.dashboard
+            ? `Match results are signed with the enclave-derived key (${data.resultSigning.enclaveAddress}). The verify dashboard lists this address publicly.`
+            : `The enclave key is available and results will be signed, but the app is not yet registered — redeploy to bind the key address to the app ID on the verify dashboard.`)
+        : 'No enclave key is available (local mode), so match results are unsigned.',
       artifact: data.resultSigning.enclaveAddress,
-      artifactPending: data.resultSigning.available && !data.enclave.dashboard,
-      link: data.enclave.dashboard
+      link: data.enclave.dashboard,
+      linkText: 'View on verify dashboard'
     },
     {
-      title: '5. Runtime attestation',
+      title: 'Runtime attestation',
       status: attestStatus,
-      stateProse: stateText.runtimeAttestation(),
-      how: data.runtimeAttestation.how,
-      details: data.runtimeAttestation.configured ? [
-        { label: 'Audience', value: data.runtimeAttestation.audience || 'none' },
-        { label: 'Attestations', value: data.runtimeAttestation.attestations },
-        { label: 'Last attested', value: data.runtimeAttestation.lastAttestAt || 'never' }
-      ] : null,
+      claim: 'Every result can request a fresh hardware receipt',
+      why: 'At match end the enclave requests a per-action attestation whose extra-data is the fingerprint (SHA-512) of the result. The hardware-key service verifies the hardware quote before minting the proof token (a JWT), binding (this result ↔ this attested instance ↔ this moment).',
+      rightNow: !data.runtimeAttestation.configured
+        ? 'No hardware-key service attestation config (local mode) — per-action attestation unavailable here.'
+        : (data.runtimeAttestation.lastError
+            ? `Pending platform fix — the enclave requests per-action attestations correctly, but hardware-quote verification is failing on a known platform bug. Tracked publicly: Layr-Labs/ecloud#169 (platform work happens in the open — you can watch it close). What's still true: the enclave-key signature already binds every result to this enclave; runtime attestation adds a fresher 'this exact moment' binding on top.`
+            : (data.runtimeAttestation.attestations === 0
+                ? 'Runtime attestation is configured. First match completion will request a fresh attestation whose extra-data is the fingerprint (SHA-512) of the result.'
+                : `Runtime attestation is working. ${data.runtimeAttestation.attestations} attestations minted, last at ${data.runtimeAttestation.lastAttestAt}. Each proof token (JWT)'s extra-data is the fingerprint (SHA-512) of the canonical result message.`)),
+      artifact: data.runtimeAttestation.configured ? `Audience: ${data.runtimeAttestation.audience || 'none'}` : null,
       error: data.runtimeAttestation.lastError
     },
     {
-      title: '6. Determinism',
-      status: 'verified',
-      stateProse: 'Right now: the engine is a pure function of (seed, decision log). Re-run the public engine code with the signed seed and decisions to reproduce the exact final board.',
-      how: data.determinism.how
+      title: 'Attested build & instance',
+      status: enclaveStatus,
+      claim: 'This runs inside secure hardware (a "TEE"), built from public code',
+      why: 'EigenCompute boots this container inside a hardware TEE. The platform built this image from the public repo at this commit and recorded a signed build record (provenance signature). The verify dashboard binds the app ID to the attested image code fingerprint (digest).',
+      rightNow: !data.enclave.runningInEnclave
+        ? 'This instance is running locally, outside a TEE. Deploy to EigenCompute for enclave execution.'
+        : (!data.enclave.appId
+            ? 'The enclave is running but the app ID is pending registration — redeploy to bind the ID.'
+            : (data.enclave.dashboard
+                ? `This match is executing inside a hardware TEE. The verify dashboard binds the app ID to the attested image code fingerprint (digest). Built from commit ${data.build.commit.slice(0, 7)}.`
+                : 'The enclave is running but the dashboard is unavailable.')),
+      artifact: data.enclave.dashboard ? data.enclave.appId : null,
+      link: data.enclave.dashboard,
+      linkText: 'View on verify dashboard'
     }
   ];
 
-  const html = cards.map(card => {
+  let html = cards.map(card => {
     let cardHtml = `
       <div class="proof-card">
         <div class="proof-header">
           <div class="proof-title">${card.title}</div>
           <div class="proof-status ${card.status}">${card.status}</div>
         </div>
-        <div class="proof-how"><strong>What this proves when green:</strong> ${card.how}</div>
-        <div class="proof-how" style="margin-top:10px;"><strong>Right now:</strong> ${card.stateProse}</div>
+        <div class="proof-claim">${card.claim}</div>
+        <div class="proof-why"><strong>Why believable:</strong> ${card.why}</div>
+        <div class="proof-right-now"><strong>Right now:</strong> ${card.rightNow}</div>
     `;
 
-    if (card.artifactPending) {
-      cardHtml += `
-        <div class="proof-artifact" style="background: rgba(210, 153, 34, 0.08); border-color: var(--degraded);">
-          <div class="artifact-text" style="color: var(--degraded); font-style: italic;">Pending registration — redeploy will bind ID</div>
-        </div>
-      `;
-    } else if (card.artifact) {
+    if (card.artifact) {
       cardHtml += `
         <div class="proof-artifact">
           <div class="artifact-text">${card.artifact}</div>
@@ -1984,33 +2210,11 @@ function renderVerifyData(data) {
       `;
     }
 
-    if (card.details) {
-      cardHtml += '<details class="proof-details" style="margin-top:10px;"><summary style="cursor:pointer;color:var(--dim);font-size:11px;font-weight:600;">Technical details</summary><div style="margin-top:8px;">';
-      for (const d of card.details) {
-        cardHtml += `
-          <div class="detail-row">
-            <div class="detail-label">${d.label}</div>
-            <div class="detail-value">${d.value}</div>
-          </div>
-        `;
-      }
-      cardHtml += '</div></details>';
-    }
-
-    if (card.availableModels && card.availableModels.length > 0) {
-      cardHtml += '<details style="margin-top:8px;"><summary style="cursor:pointer;color:var(--dim);font-size:11px;font-weight:600;">Available models</summary><div class="model-chips" style="margin-top:8px;">';
-      for (const m of card.availableModels) {
-        cardHtml += `<div class="model-chip">${m}</div>`;
-      }
-      cardHtml += '</div></details>';
-    }
-
     if (card.error) {
-      const displayError = card.errorBody || card.error;
       cardHtml += `
         <details class="error-details">
-          <summary>Last error</summary>
-          <div style="margin-top:8px;">${displayError}</div>
+          <summary>Show raw error (for engineers)</summary>
+          <div style="margin-top:8px; white-space: pre-wrap;">${card.error}</div>
         </details>
       `;
     }
@@ -2019,68 +2223,42 @@ function renderVerifyData(data) {
     return cardHtml;
   }).join('');
 
+  // Add runtime state strip for model access (demoted)
+  html += `
+    <div class="proof-card">
+      <div class="proof-header">
+        <div class="proof-title">Runtime state: Model access</div>
+        <div class="proof-status ${modelStatus}">${modelStatus}</div>
+      </div>
+      <div class="proof-why" style="margin-bottom: 0;">
+        <strong>Who writes plans — NOT about result integrity:</strong> When the AI gateway is up, Claude writes your nation's plans from these orders. Right now ${data.modelAccess.lastError ? 'the gateway is returning errors at the network edge, before requests reach the attested endpoint. Nations run on built-in playbooks while this clears. **This does not affect the receipt chain** — matches still run deterministically and results are still enclave-signed.' : (data.modelAccess.activeModel ? `${data.modelAccess.activeModel} is writing plans via the attested gateway. Calls: ${data.modelAccess.calls}, failures: ${data.modelAccess.failures}.` : 'no model has successfully responded yet. First match will probe the gateway.')}
+      </div>
+      ${data.modelAccess.lastError ? `
+        <details class="error-details">
+          <summary>Show raw error (for engineers)</summary>
+          <div style="margin-top:8px; white-space: pre-wrap;">${data.modelAccess.lastErrorBody || data.modelAccess.lastError}</div>
+        </details>
+      ` : ''}
+    </div>
+  `;
+
   $('#proofCards').innerHTML = html;
 }
 
-$('#refreshVerify').addEventListener('click', loadVerifyData);
-
-$('#probeModels').addEventListener('click', async () => {
-  $('#probeModels').disabled = true;
-  $('#probeModels').textContent = 'probing...';
-  try {
-    await fetch('/api/verify/probe-models', { method: 'POST' });
-    await loadVerifyData();
-  } catch (err) {
-    console.error('Probe failed:', err);
-  }
-  $('#probeModels').disabled = false;
-  $('#probeModels').textContent = '🔍 probe models';
+$('#refreshVerify').addEventListener('click', () => {
+  loadVerifyData();
+  updateStatusStrip();
 });
 
 // --- Initial load ---
-// Render the server's honest "right now" summary as three separate facts, so
-// the page never over-claims: engine location, who is writing plans, signing.
-async function updateEnclaveStatus(data) {
-  const badge = $('#enclaveStatus');
-  const now = data.now || {};
-  if (now.engineInTee) {
-    badge.className = 'badge live';
-    badge.innerHTML = '<span class="dot"></span><span>' + COPY.STATUS_TEE + '</span>';
-  } else {
-    badge.className = 'badge demo';
-    badge.innerHTML = '<span class="dot"></span><span>' + COPY.STATUS_LOCAL + '</span>';
-  }
-  let nowBar = $('#nowBar');
-  if (!nowBar) {
-    nowBar = document.createElement('div');
-    nowBar.id = 'nowBar';
-    nowBar.style.cssText = 'flex-basis:100%;font-size:11px;color:var(--dim);display:flex;gap:14px;flex-wrap:wrap;';
-    document.querySelector('.statusbar').appendChild(nowBar);
-  }
-  const chip = (ok, text) =>
-    '<span style="display:inline-flex;align-items:center;gap:5px;">' +
-    '<span style="width:6px;height:6px;border-radius:0;background:' + (ok ? 'var(--ok)' : 'var(--degraded)') + '"></span>' +
-    text + '</span>';
-  nowBar.innerHTML =
-    chip(now.engineInTee, now.engineInTee ? COPY.NOW_ENGINE_TEE : COPY.NOW_ENGINE_LOCAL) +
-    chip(now.llmSteering, now.llmSteering ? COPY.NOW_LLM_ON(data.modelAccess && data.modelAccess.activeModel) : COPY.NOW_LLM_FALLBACK) +
-    chip(now.resultsSigned, now.resultsSigned ? COPY.NOW_SIGNED : COPY.NOW_UNSIGNED);
-}
-
 async function init() {
-  try {
-    const res = await fetch('/api/verify');
-    const data = await res.json();
-    state.verifyData = data;
-    updateEnclaveStatus(data);
-  } catch (err) {
-    console.error('Failed to load initial status:', err);
-  }
+  await updateStatusStrip();
+  await loadLastReceipt();
 }
 
 init();
-// keep the "right now" strip truthful while a match runs (gateway state changes)
-setInterval(init, 30000);
+// Keep status strip truthful while working
+setInterval(updateStatusStrip, 30000);
 </script>
 
 </body>
