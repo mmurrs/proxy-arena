@@ -105,6 +105,34 @@ app.get("/api/verify", async (_req, res) => {
   });
 });
 
+// Instant receipt demo — lets a first-time viewer see a live receipt in
+// seconds instead of waiting for a 2-minute match. The enclave signs a
+// caller-influenced sample payload RIGHT NOW and also attempts a hardware
+// attestation over it, returning both (or honest unavailability for each).
+app.post("/api/receipt/demo", async (req, res) => {
+  const note = String(req.body?.note || "hello from a first-time viewer").slice(0, 120);
+  const payload = {
+    app: "proxy-arena",
+    appId: APP_ID,
+    kind: "demo-receipt",
+    note,
+    at: new Date().toISOString(),
+  };
+  const signed = await signResult(payload);
+  const attestation = await attestPayload(signed.message);
+  res.json({
+    payload,
+    canonicalMessage: signed.message,
+    signature: signed.unavailable ? null : signed.signature,
+    signerAddress: signed.unavailable ? null : signed.address,
+    signerNote: signed.unavailable ? "No enclave key here (local mode) — deploy to EigenCompute to get signatures." : null,
+    attestation: attestation.unavailable
+      ? { unavailable: true, note: attestation.note, sha512: attestation.sha512Hex }
+      : { jwt: attestation.jwt, audience: attestation.audience, sha512: attestation.sha512Hex },
+    dashboard: DASHBOARD,
+  });
+});
+
 // verify a signed result (the UI also does this client-side via ecrecover)
 app.post("/api/verify/signature", (req, res) => {
   const { message, signature } = req.body || {};
